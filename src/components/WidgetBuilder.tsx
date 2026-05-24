@@ -22,7 +22,7 @@ import {
   MoreHorizontal,
   Check,
 } from 'lucide-react';
-import ReactRunner from './ReactRunner';
+import ReactRunner, { stripFences } from './ReactRunner';
 
 const WIDGETS_KEY = 'pelada-widgets';
 
@@ -128,7 +128,7 @@ export default function WidgetBuilder() {
       });
       const data = await res.json();
       if (data.code?.code) {
-        setGeneratedCode(data.code.code);
+        setGeneratedCode(stripFences(data.code.code));
         setWidgetHistory([...newHistory, { role: 'assistant', content: data.final_response || 'Widget generated.' }]);
         setShowCode(false);
         generateMeta(q, data.code.code);

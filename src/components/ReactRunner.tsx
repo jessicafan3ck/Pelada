@@ -1,58 +1,83 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 interface ReactRunnerProps {
   code: string;
   height?: number;
 }
 
-function stripFences(raw: string): string {
-  return raw.replace(/^```(?:jsx?|tsx?|javascript|typescript)?\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+export function stripFences(raw: string): string {
+  return raw
+    .replace(/^```(?:jsx?|tsx?|javascript|typescript)?\s*\n?/i, '')
+    .replace(/\n?```\s*$/i, '')
+    .trim();
 }
+
+const RECHARTS_DESTRUCTURE = [
+  'LineChart', 'Line', 'BarChart', 'Bar', 'PieChart', 'Pie', 'Cell',
+  'AreaChart', 'Area', 'ScatterChart', 'Scatter',
+  'RadarChart', 'Radar', 'PolarGrid', 'PolarAngleAxis', 'PolarRadiusAxis',
+  'XAxis', 'YAxis', 'CartesianGrid', 'Tooltip', 'Legend', 'ResponsiveContainer',
+  'ComposedChart', 'ReferenceLine',
+].map(n => `var ${n} = (typeof Recharts !== 'undefined' && Recharts.${n}) || null;`).join('\n');
+
+const REACT_HOOKS = ['useState', 'useEffect', 'useMemo', 'useCallback', 'useRef', 'useReducer']
+  .map(n => `var ${n} = React.${n};`).join('\n');
 
 const ReactRunner = ({ code, height = 280 }: ReactRunnerProps) => {
   const cleanCode = stripFences(code);
-  const iframeContent = useMemo(() => `<!DOCTYPE html>
+
+  const iframeContent = useMemo(() => {
+    const safeCode = JSON.stringify(cleanCode);
+    return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8"/>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://unpkg.com/recharts@2.15.2/umd/recharts.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
+  <script src="https://unpkg.com/recharts@2.15.2/umd/recharts.min.js"><\/script>
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; padding: 16px; background: #0d1117; color: #e4e4e7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    body { margin: 0; padding: 16px; background: #0d1117; color: #e4e4e7;
+           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
     #root { width: 100%; }
-    #error-display { color: #f87171; font-size: 12px; font-family: monospace; padding: 12px; white-space: pre-wrap; background: #1f0a0a; border-radius: 8px; margin: 8px; }
+    #err { color: #f87171; font-size: 11px; font-family: monospace; padding: 12px;
+           white-space: pre-wrap; background: #1f0a0a; border: 1px solid #7f1d1d;
+           border-radius: 8px; margin: 4px; display: none; }
   </style>
 </head>
 <body>
   <div id="root"></div>
-  <div id="error-display" style="display:none"></div>
-  <script type="text/babel" data-presets="react">
-    const { useState, useEffect, useMemo, useCallback, useRef, useReducer } = React;
-    const {
-      LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
-      AreaChart, Area, ScatterChart, Scatter,
-      RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-      XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-      ComposedChart, ReferenceLine
-    } = Recharts;
-
-    try {
-      ${cleanCode}
-
-      const rootEl = document.getElementById('root');
-      const root = ReactDOM.createRoot(rootEl);
-      root.render(React.createElement(Widget));
-    } catch (e) {
-      const errEl = document.getElementById('error-display');
-      errEl.style.display = 'block';
-      errEl.textContent = 'Error: ' + e.message;
+  <div id="err"></div>
+  <script>
+    function showErr(msg) {
+      var el = document.getElementById('err');
+      el.style.display = 'block';
+      el.textContent = msg;
     }
-  </script>
+    window.onerror = function(msg) { showErr('Runtime error: ' + msg); return true; };
+
+    window.addEventListener('load', function() {
+      var rawCode = ${safeCode};
+      try {
+        ${REACT_HOOKS}
+        ${RECHARTS_DESTRUCTURE}
+        var transformed = Babel.transform(
+          '(function(){"use strict";' + rawCode + '\\nreturn Widget;})()',
+          { presets: ['react'] }
+        ).code;
+        var Widget = eval(transformed);
+        if (typeof Widget !== 'function') throw new Error('Widget function not found — make sure your code defines a function named Widget.');
+        var root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(Widget));
+      } catch(e) {
+        showErr('Widget error: ' + e.message);
+      }
+    });
+  <\/script>
 </body>
-</html>`, [cleanCode]);
+</html>`;
+  }, [cleanCode]);
 
   if (!cleanCode) {
     return (
@@ -75,7 +100,7 @@ const ReactRunner = ({ code, height = 280 }: ReactRunnerProps) => {
       </div>
       <iframe
         srcDoc={iframeContent}
-        style={{ width: '100%', height, border: 'none', display: 'block', background: 'transparent' }}
+        style={{ width: '100%', height, border: 'none', display: 'block' }}
         sandbox="allow-scripts"
         title="Widget Live Preview"
       />
