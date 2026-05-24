@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import React, { useState, useEffect, Component } from 'react';
+import * as Recharts from 'recharts';
 
 interface ReactRunnerProps {
   code: string;
@@ -13,9 +14,7 @@ export function stripFences(raw: string): string {
 }
 
 function braceDepth(code: string): number {
-  let depth = 0;
-  let inStr = false;
-  let strChar = '';
+  let depth = 0, inStr = false, strChar = '';
   for (let i = 0; i < code.length; i++) {
     const ch = code[i];
     if (inStr) {
@@ -28,93 +27,80 @@ function braceDepth(code: string): number {
   return depth;
 }
 
+const RECHARTS_KEYS = [
+  'LineChart','Line','BarChart','Bar','PieChart','Pie','Cell',
+  'AreaChart','Area','ScatterChart','Scatter',
+  'RadarChart','Radar','PolarGrid','PolarAngleAxis','PolarRadiusAxis',
+  'XAxis','YAxis','CartesianGrid','Tooltip','Legend','ResponsiveContainer',
+  'ComposedChart','ReferenceLine',
+] as const;
+
+// Error boundary to catch render-time exceptions from generated widgets
+class WidgetBoundary extends Component<
+  { children: React.ReactNode },
+  { err: string | null }
+> {
+  state = { err: null as string | null };
+  static getDerivedStateFromError(e: Error) { return { err: e.message }; }
+  render() {
+    if (this.state.err) {
+      return (
+        <div style={{ color: '#f87171', fontSize: 11, fontFamily: 'monospace',
+          padding: 12, background: '#1f0a0a', border: '1px solid #7f1d1d', borderRadius: 8 }}>
+          Render error: {this.state.err}
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const ReactRunner = ({ code, height = 280 }: ReactRunnerProps) => {
   const cleanCode = stripFences(code);
+  const [Widget, setWidget] = useState<React.ComponentType | null>(null);
+  const [compileError, setCompileError] = useState<string | null>(null);
+  const [ready, setReady] = useState(typeof (window as any).Babel !== 'undefined');
 
-  // Catch obviously truncated code before touching the iframe
-  const truncated = cleanCode && braceDepth(cleanCode) > 0;
+  // Wait for Babel (loaded via index.html script tag) to be available
+  useEffect(() => {
+    if (ready) return;
+    const t = setInterval(() => {
+      if (typeof (window as any).Babel !== 'undefined') { setReady(true); clearInterval(t); }
+    }, 100);
+    return () => clearInterval(t);
+  }, [ready]);
 
-  const iframeContent = useMemo(() => {
-    // Safely embed the code so </script> inside JSX strings can't break the HTML
-    const escaped = JSON.stringify(cleanCode).replace(/<\/script/gi, '<\\/script');
-    return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8"/>
-  <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; padding: 16px; background: #0d1117; color: #e4e4e7;
-           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-    #root { width: 100%; }
-    #err  { display: none; color: #f87171; font-size: 11px; font-family: monospace;
-            padding: 12px; white-space: pre-wrap; background: #1f0a0a;
-            border: 1px solid #7f1d1d; border-radius: 8px; margin: 4px; }
-  </style>
-  <script>
-    function showErr(msg) {
-      var el = document.getElementById('err');
-      el.style.display = 'block';
-      el.textContent = String(msg);
+  useEffect(() => {
+    if (!ready || !cleanCode) return;
+    setCompileError(null);
+    setWidget(null);
+    try {
+      const Babel = (window as any).Babel;
+      const { code: transformed } = Babel.transform(cleanCode, { presets: ['react'] });
+
+      const rechartsArgs = RECHARTS_KEYS.map(k => (Recharts as Record<string, unknown>)[k]);
+
+      // new Function runs in global scope — we explicitly pass every dependency
+      // the widget code might reference, so it never needs to reach into the module.
+      const factory = new Function(
+        'React',
+        'useState','useEffect','useMemo','useCallback','useRef','useReducer',
+        ...RECHARTS_KEYS,
+        `${transformed}\nif (typeof Widget !== 'undefined') return Widget;\nthrow new Error('Your code must define a function named Widget.');`
+      );
+
+      const WidgetFn = factory(
+        React,
+        React.useState, React.useEffect, React.useMemo,
+        React.useCallback, React.useRef, React.useReducer,
+        ...rechartsArgs,
+      );
+
+      setWidget(() => WidgetFn);
+    } catch (e: unknown) {
+      setCompileError(e instanceof Error ? e.message : String(e));
     }
-    window.onerror = function(msg) { showErr('Runtime error: ' + msg); return true; };
-  <\/script>
-  <script src="https://unpkg.com/react@18/umd/react.development.js"
-          onerror="showErr('Failed to load React from CDN — check your internet connection.')"><\/script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
-          onerror="showErr('Failed to load ReactDOM from CDN.')"><\/script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"
-          onerror="showErr('Failed to load Babel from CDN.')"><\/script>
-  <script src="https://unpkg.com/recharts@2.15.2/umd/recharts.min.js"
-          onerror="showErr('Failed to load Recharts from CDN.')"><\/script>
-</head>
-<body>
-  <div id="root"></div>
-  <div id="err"></div>
-  <script>
-    window.addEventListener('load', function () {
-      var rawCode = ${escaped};
-      try {
-        if (typeof Babel === 'undefined') throw new Error('Babel did not load. Try refreshing.');
-        if (typeof React === 'undefined') throw new Error('React did not load. Try refreshing.');
-
-        var useState    = React.useState;
-        var useEffect   = React.useEffect;
-        var useMemo     = React.useMemo;
-        var useCallback = React.useCallback;
-        var useRef      = React.useRef;
-        var useReducer  = React.useReducer;
-        var R = (typeof Recharts !== 'undefined') ? Recharts : {};
-        var LineChart = R.LineChart, Line = R.Line, BarChart = R.BarChart, Bar = R.Bar,
-            PieChart = R.PieChart, Pie = R.Pie, Cell = R.Cell,
-            AreaChart = R.AreaChart, Area = R.Area,
-            ScatterChart = R.ScatterChart, Scatter = R.Scatter,
-            RadarChart = R.RadarChart, Radar = R.Radar,
-            PolarGrid = R.PolarGrid, PolarAngleAxis = R.PolarAngleAxis,
-            PolarRadiusAxis = R.PolarRadiusAxis,
-            XAxis = R.XAxis, YAxis = R.YAxis,
-            CartesianGrid = R.CartesianGrid, Tooltip = R.Tooltip,
-            Legend = R.Legend, ResponsiveContainer = R.ResponsiveContainer,
-            ComposedChart = R.ComposedChart, ReferenceLine = R.ReferenceLine;
-
-        var src = '(function(){\\n' + rawCode + '\\nreturn (typeof Widget !== "undefined" ? Widget : null);\\n})()';
-        var transformed = Babel.transform(src, { presets: ['react'] }).code;
-        var Widget = eval(transformed);
-
-        if (typeof Widget !== 'function') {
-          throw new Error('No function named Widget found. Make sure your code defines a function Widget().');
-        }
-
-        ReactDOM.createRoot(document.getElementById('root')).render(
-          React.createElement(Widget)
-        );
-      } catch (e) {
-        showErr('Widget error: ' + e.message);
-      }
-    });
-  <\/script>
-</body>
-</html>`;
-  }, [cleanCode]);
+  }, [cleanCode, ready]);
 
   if (!cleanCode) {
     return (
@@ -124,10 +110,26 @@ const ReactRunner = ({ code, height = 280 }: ReactRunnerProps) => {
     );
   }
 
-  if (truncated) {
+  if (braceDepth(cleanCode) > 0) {
     return (
       <div className="rounded-xl border border-red-800/40 bg-red-900/10 p-4 text-red-400 text-xs font-mono leading-relaxed">
-        The generated code looks truncated (unclosed braces). Try generating again — sometimes a shorter or simpler description produces more reliable code.
+        Generated code looks truncated (unclosed braces). Try a shorter or simpler description and generate again.
+      </div>
+    );
+  }
+
+  if (compileError) {
+    return (
+      <div className="rounded-xl border border-red-800/40 bg-red-900/10 p-4 text-red-400 text-xs font-mono leading-relaxed whitespace-pre-wrap">
+        {compileError}
+      </div>
+    );
+  }
+
+  if (!ready || !Widget) {
+    return (
+      <div className="rounded-xl border border-white/10 bg-zinc-900 flex items-center justify-center p-8 text-zinc-500 text-sm">
+        {!ready ? 'Loading Babel…' : 'Building widget…'}
       </div>
     );
   }
@@ -143,11 +145,11 @@ const ReactRunner = ({ code, height = 280 }: ReactRunnerProps) => {
         <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider">Live Preview</span>
         <div />
       </div>
-      <iframe
-        srcDoc={iframeContent}
-        style={{ width: '100%', height, border: 'none', display: 'block' }}
-        title="Widget Live Preview"
-      />
+      <div className="overflow-auto p-4" style={{ height: height - 36 }}>
+        <WidgetBoundary>
+          <Widget />
+        </WidgetBoundary>
+      </div>
     </div>
   );
 };
