@@ -23,6 +23,7 @@ import {
   Check,
 } from 'lucide-react';
 import ReactRunner, { stripFences, buildWidgetSrcdoc } from './ReactRunner';
+import EffectHouseExporter from './EffectHouseExporter';
 
 const WIDGETS_KEY = 'pelada-widgets';
 
@@ -209,7 +210,12 @@ function encodeWidget(code: string): string {
   return btoa(binary);
 }
 
-function DeployModal({ code, onClose }: { code: string; onClose: () => void }) {
+function DeployModal({ code, name, description, onClose }: {
+  code: string;
+  name: string;
+  description: string;
+  onClose: () => void;
+}) {
   const [copied, setCopied] = useState<'url' | 'iframe' | null>(null);
   const [downloading, setDownloading] = useState(false);
   const embedUrl = `${EMBED_BASE}/?embed=${encodeWidget(code)}`;
@@ -311,10 +317,10 @@ function DeployModal({ code, onClose }: { code: string; onClose: () => void }) {
           ))}
         </div>
 
-        {/* TikTok note */}
-        <p className="text-[11px] text-zinc-600 leading-relaxed border-t border-white/5 pt-4">
-          For TikTok: share the embed URL in your link-in-bio, or download the HTML, open it on your phone, and use TikTok's screen record to capture the widget interaction as a video. TikTok Effect House does not have a public publishing API.
-        </p>
+        {/* Effect House export */}
+        <div className="border-t border-white/5 pt-4">
+          <EffectHouseExporter widgetName={name} widgetDescription={description} widgetCode={code} />
+        </div>
       </div>
     </div>
   );
@@ -847,7 +853,12 @@ Respond ONLY with valid JSON, no other text: {"name": "...", "description": "...
     <div>
       {viewMode === 'discovery' ? renderDiscovery() : renderBuilder()}
       {deployOpen && generatedCode && (
-        <DeployModal code={generatedCode} onClose={() => setDeployOpen(false)} />
+        <DeployModal
+          code={generatedCode}
+          name={widgetName}
+          description={widgetDesc}
+          onClose={() => setDeployOpen(false)}
+        />
       )}
     </div>
   );
