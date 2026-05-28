@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Play,
   Upload,
@@ -49,6 +49,62 @@ interface Model {
   scope: 'public' | 'private';
   code: string;
 }
+
+type ModelVisual = { grad: string; glow: string; hoverBorder: string; hoverShadow: string; art: React.ReactElement | null };
+
+const MODEL_VISUALS: Record<string, ModelVisual> = {
+  lim_mvp: {
+    grad: 'from-blue-900/20 to-cyan-900/10',
+    glow: 'rgba(59,130,246,0.12)',
+    hoverBorder: 'hover:border-blue-500/40',
+    hoverShadow: 'hover:shadow-[0_0_30px_rgba(37,99,235,0.2)]',
+    art: (
+      <svg className="absolute inset-0 w-full h-full opacity-40" viewBox="0 0 200 120">
+        {([[60,60],[100,35],[140,60],[100,90],[75,85],[130,40]] as [number,number][]).map(([cx,cy],i) => (
+          <g key={i}>
+            <circle cx={cx} cy={cy} r="5" fill="rgba(96,165,250,0.7)" />
+            <circle cx={cx} cy={cy} r="12" fill="none" stroke="rgba(96,165,250,0.15)" strokeWidth="1" />
+          </g>
+        ))}
+        {([[60,60,100,35],[100,35,140,60],[140,60,100,90],[100,90,60,60],[60,60,75,85],[100,35,130,40],[140,60,130,40]] as [number,number,number,number][]).map(([x1,y1,x2,y2],i) => (
+          <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(96,165,250,0.2)" strokeWidth="1" />
+        ))}
+      </svg>
+    ),
+  },
+  flair_index: {
+    grad: 'from-purple-900/20 to-pink-900/10',
+    glow: 'rgba(168,85,247,0.12)',
+    hoverBorder: 'hover:border-purple-500/40',
+    hoverShadow: 'hover:shadow-[0_0_30px_rgba(168,85,247,0.2)]',
+    art: (
+      <svg className="absolute inset-0 w-full h-full opacity-35" viewBox="0 0 200 120">
+        {[0,30,60,90,120,150,180,210,240,270,300,330].map((deg, i) => {
+          const r = i % 2 === 0 ? 38 : 22;
+          const x = 100 + r * Math.cos(deg * Math.PI / 180);
+          const y = 60 + r * Math.sin(deg * Math.PI / 180);
+          return <line key={i} x1="100" y1="60" x2={x} y2={y} stroke="rgba(216,180,254,0.4)" strokeWidth="1.5" strokeLinecap="round" />;
+        })}
+        <circle cx="100" cy="60" r="6" fill="rgba(216,180,254,0.8)" />
+        <circle cx="100" cy="60" r="18" fill="none" stroke="rgba(216,180,254,0.15)" strokeWidth="1" />
+      </svg>
+    ),
+  },
+  collapse_predictor: {
+    grad: 'from-orange-900/20 to-red-900/10',
+    glow: 'rgba(249,115,22,0.12)',
+    hoverBorder: 'hover:border-orange-500/40',
+    hoverShadow: 'hover:shadow-[0_0_30px_rgba(249,115,22,0.2)]',
+    art: (
+      <svg className="absolute inset-0 w-full h-full opacity-40" viewBox="0 0 200 120">
+        <polyline points="20,90 50,85 75,70 90,40 100,75 115,30 130,55 155,45 180,30" fill="none" stroke="rgba(251,146,60,0.5)" strokeWidth="2" strokeLinejoin="round" />
+        <polyline points="20,90 50,85 75,70 90,40 100,75 115,30 130,55 155,45 180,30" fill="none" stroke="rgba(251,146,60,0.15)" strokeWidth="8" strokeLinejoin="round" />
+        <circle cx="115" cy="30" r="5" fill="rgba(239,68,68,0.8)" />
+        <circle cx="115" cy="30" r="12" fill="none" stroke="rgba(239,68,68,0.2)" strokeWidth="1" />
+      </svg>
+    ),
+  },
+};
 
 export default function ModelPlayground() {
   const [viewMode, setViewMode] = useState<ViewMode>('discovery');
@@ -447,28 +503,27 @@ print(f"Model AUC estimate    : {0.72 + np.random.uniform(-0.02, 0.04):.3f}")
 
           {/* Featured / Popular */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {models.map(model => (
-                  <div 
-                      key={model.id}
-                      onClick={() => {
-                          setSelectedModel(model.id);
-                          setViewMode('workbench');
-                      }}
-                      className="group bg-[#09090b] border border-white/5 rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all hover:shadow-[0_0_30px_rgba(37,99,235,0.15)] cursor-pointer hover:-translate-y-1"
+              {models.map(model => {
+                const v: ModelVisual = MODEL_VISUALS[model.id] ?? { grad: 'from-blue-900/10 to-purple-900/10', glow: 'rgba(99,102,241,0.1)', hoverBorder: 'hover:border-indigo-500/30', hoverShadow: 'hover:shadow-[0_0_30px_rgba(99,102,241,0.15)]', art: null };
+                return (
+                  <div
+                    key={model.id}
+                    onClick={() => { setSelectedModel(model.id); setViewMode('workbench'); }}
+                    className={`group bg-[#09090b] border border-white/5 rounded-2xl overflow-hidden ${v.hoverBorder} transition-all ${v.hoverShadow} cursor-pointer hover:-translate-y-1`}
                   >
-                      <div className="h-40 bg-gradient-to-br from-blue-900/10 to-purple-900/10 relative overflow-hidden group-hover:from-blue-900/20 group-hover:to-purple-900/20 transition-colors">
-                          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,_rgba(59,130,246,0.1),_transparent_70%)]" />
-                          
-                          <div className="absolute top-4 left-4">
-                              <div className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border backdrop-blur-md ${
-                                  model.origin === 'builtin' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 
-                                  model.origin === 'generated' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 
-                                  'bg-zinc-500/10 text-zinc-400 border-zinc-500/20'
-                              }`}>
-                                  {model.origin === 'builtin' ? 'Official' : model.origin === 'generated' ? 'AI Generated' : 'Community'}
-                              </div>
-                          </div>
+                    <div className={`h-40 bg-gradient-to-br ${v.grad} relative overflow-hidden transition-colors`}>
+                      <div className="absolute inset-0" style={{ background: `radial-gradient(circle at 40% 50%, ${v.glow}, transparent 70%)` }} />
+                      {v.art}
+                      <div className="absolute top-4 left-4">
+                        <div className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border backdrop-blur-md ${
+                          model.origin === 'builtin'   ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                          model.origin === 'generated' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                          'bg-zinc-500/10 text-zinc-400 border-zinc-500/20'
+                        }`}>
+                          {model.origin === 'builtin' ? 'Official' : model.origin === 'generated' ? 'AI Generated' : 'Community'}
+                        </div>
                       </div>
+                    </div>
                       
                       <div className="p-6">
                           <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">{model.name}</h3>
@@ -492,8 +547,9 @@ print(f"Model AUC estimate    : {0.72 + np.random.uniform(-0.02, 0.04):.3f}")
                           </div>
                       </div>
                   </div>
-              ))}
-              
+                );
+              })}
+
               {/* New Project Card */}
                <div 
                   onClick={() => setViewMode('create_model')}

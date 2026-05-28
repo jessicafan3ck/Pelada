@@ -75,6 +75,97 @@ const SEED_WIDGETS: SavedWidget[] = [
     description: 'Internal proprietary metrics dashboard for coaching staff.',
     tags: ['KPI', 'Internal'], code: '', createdAt: '2026-05-20T00:00:00Z', likes: 12, scope: 'private',
   },
+  {
+    id: 'w5', name: 'GOAT XI Builder', author: '@pelada', type: 'Fan',
+    description: 'Pick your all-time women\'s football GOAT lineup. Tap a position, assign a legend.',
+    tags: ['Fan', 'Interactive', 'WWC'], createdAt: '2026-05-25T00:00:00Z', likes: 5900, scope: 'public',
+    code: `function Widget() {
+  const POSITIONS = [
+    { id: 'gk',  label: 'GK', x: 50, y: 85 },
+    { id: 'lb',  label: 'LB', x: 12, y: 65 },
+    { id: 'cb1', label: 'CB', x: 34, y: 65 },
+    { id: 'cb2', label: 'CB', x: 66, y: 65 },
+    { id: 'rb',  label: 'RB', x: 88, y: 65 },
+    { id: 'cm1', label: 'CM', x: 28, y: 43 },
+    { id: 'cm2', label: 'CM', x: 50, y: 43 },
+    { id: 'cm3', label: 'CM', x: 72, y: 43 },
+    { id: 'lw',  label: 'LW', x: 20, y: 20 },
+    { id: 'st',  label: 'ST', x: 50, y: 15 },
+    { id: 'rw',  label: 'RW', x: 80, y: 20 },
+  ];
+  const PLAYERS = ['Marta','Putellas','Morgan','Harder','Bronze','Kerr','Hamm','Wambach','Sinclair','Lloyd','Henry','Rapinoe','Bonmati','Hermoso','Popp'];
+  const [lineup, setLineup] = useState({});
+  const [selected, setSelected] = useState(null);
+  const filled = Object.keys(lineup).length;
+  return (
+    <div style={{ background: '#0a0a0f', minHeight: '100%', padding: '16px', fontFamily: 'system-ui,sans-serif', color: 'white' }}>
+      <h2 style={{ textAlign: 'center', marginBottom: 3, fontSize: 16, fontWeight: 800 }}>Your GOAT XI</h2>
+      <p style={{ textAlign: 'center', color: '#52525b', fontSize: 10, marginBottom: 10 }}>Tap a position to assign a player</p>
+      <div style={{ position: 'relative', background: 'linear-gradient(180deg,#1a3a2a,#0d2a1a)', borderRadius: 10, height: 255, margin: '0 auto 10px', maxWidth: 360, border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', left: '22%', right: '22%', top: '48%', bottom: '10%', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 3, pointerEvents: 'none' }} />
+        {POSITIONS.map(pos => (
+          <div key={pos.id} onClick={() => setSelected(selected === pos.id ? null : pos.id)} style={{ position: 'absolute', left: pos.x+'%', top: pos.y+'%', transform: 'translate(-50%,-50%)', textAlign: 'center', cursor: 'pointer' }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: lineup[pos.id] ? 'rgba(168,85,247,0.3)' : 'rgba(255,255,255,0.06)', border: '2px solid '+(selected===pos.id?'#a855f7':lineup[pos.id]?'rgba(168,85,247,0.45)':'rgba(255,255,255,0.1)'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, boxShadow: selected===pos.id?'0 0 10px rgba(168,85,247,0.4)':'none', transition: 'all 0.15s' }}>
+              {lineup[pos.id] ? lineup[pos.id].slice(0,4) : pos.label}
+            </div>
+          </div>
+        ))}
+      </div>
+      {selected ? (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'center' }}>
+          {PLAYERS.map(p => (
+            <button key={p} onClick={() => { setLineup(l => ({ ...l, [selected]: p })); setSelected(null); }} style={{ padding: '3px 8px', borderRadius: 14, background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.2)', color: '#d8b4fe', fontSize: 10, cursor: 'pointer', fontWeight: 600 }}>{p}</button>
+          ))}
+          <button onClick={() => { setLineup(l => { const n={...l}; delete n[selected]; return n; }); setSelected(null); }} style={{ padding: '3px 8px', borderRadius: 14, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#fca5a5', fontSize: 10, cursor: 'pointer' }}>Clear</button>
+        </div>
+      ) : (
+        <p style={{ textAlign: 'center', color: '#3f3f46', fontSize: 10 }}>{filled}/11 filled · {filled===11?'GOAT XI complete!':'keep going'}</p>
+      )}
+    </div>
+  );
+}`,
+  },
+  {
+    id: 'w6', name: 'Tactical Lineup Board', author: '@pelada', type: 'Fan',
+    description: 'Drop players into a formation. Switch between 4-3-3, 4-4-2, 3-5-2, and 4-2-3-1.',
+    tags: ['Fan', 'Tactics', 'Formation'], createdAt: '2026-05-26T00:00:00Z', likes: 4200, scope: 'public',
+    code: `function Widget() {
+  const FORMATIONS = {
+    '4-3-3':  [[50],[20,40,60,80],[28,50,72],[22,50,78]],
+    '4-4-2':  [[50],[18,40,62,82],[18,40,62,82],[35,65]],
+    '3-5-2':  [[50],[25,50,75],[12,31,50,69,88],[35,65]],
+    '4-2-3-1':[[50],[20,40,60,80],[35,65],[18,50,82],[50]],
+  };
+  const COLORS = ['#3b82f6','#22c55e','#f59e0b','#ef4444','#a855f7','#06b6d4'];
+  const [formation, setFormation] = useState('4-3-3');
+  const rows = FORMATIONS[formation];
+  let n = 0;
+  const positions = rows.flatMap((xs, ri) => xs.map(x => ({ x, y: 10 + ri * (78 / Math.max(rows.length-1,1)), n: ++n })));
+  return (
+    <div style={{ background: '#0a0a0f', minHeight: '100%', padding: '16px', fontFamily: 'system-ui,sans-serif', color: 'white' }}>
+      <h2 style={{ textAlign: 'center', marginBottom: 8, fontSize: 16, fontWeight: 800 }}>Tactical Board</h2>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 5, marginBottom: 10, flexWrap: 'wrap' }}>
+        {Object.keys(FORMATIONS).map(f => (
+          <button key={f} onClick={() => setFormation(f)} style={{ padding: '4px 10px', borderRadius: 14, background: formation===f?'#3b82f6':'rgba(255,255,255,0.05)', border: '1px solid '+(formation===f?'#3b82f6':'rgba(255,255,255,0.08)'), color: 'white', fontWeight: 700, fontSize: 11, cursor: 'pointer', transition: 'all 0.15s' }}>{f}</button>
+        ))}
+      </div>
+      <div style={{ position: 'relative', background: 'linear-gradient(180deg,#1a3a2a,#0d2a1a)', borderRadius: 10, height: 255, margin: '0 auto', maxWidth: 360, border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 1, background: 'rgba(255,255,255,0.04)' }} />
+        <div style={{ position: 'absolute', left: '20%', right: '20%', top: '48%', height: 1, background: 'rgba(255,255,255,0.04)' }} />
+        {positions.map(({ x, y, n: num }) => {
+          const color = COLORS[(num-1) % COLORS.length];
+          return (
+            <div key={num} style={{ position: 'absolute', left: x+'%', top: y+'%', transform: 'translate(-50%,-50%)' }}>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: color+'22', border: '2px solid '+color+'66', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color }}>{num}</div>
+            </div>
+          );
+        })}
+      </div>
+      <p style={{ textAlign: 'center', color: '#3f3f46', fontSize: 10, marginTop: 6 }}>{formation} · {positions.length} players</p>
+    </div>
+  );
+}`,
+  },
 ];
 
 const GEN_MESSAGES = [
@@ -440,7 +531,7 @@ Respond ONLY with valid JSON, no other text: {"name": "...", "description": "...
       )
     : allWidgets;
 
-  const typeIcon: Record<string, typeof BarChart3> = { Chart: TrendingUp, Map: LayoutGrid, Graph: Activity, KPI: BarChart3 };
+  const typeIcon: Record<string, typeof BarChart3> = { Chart: TrendingUp, Map: LayoutGrid, Graph: Activity, KPI: BarChart3, Fan: Star };
 
   const renderDiscovery = () => (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -573,15 +664,29 @@ Respond ONLY with valid JSON, no other text: {"name": "...", "description": "...
               return (
                 <div
                   key={w.id}
-                  onClick={() => setViewMode('builder')}
+                  onClick={() => {
+                    if (w.code) {
+                      setGeneratedCode(w.code);
+                      setWidgetName(w.name);
+                      setWidgetDesc(w.description);
+                      setWidgetTags(w.tags);
+                      setNaturalLanguageInput(w.name);
+                    }
+                    setViewMode('builder');
+                  }}
                   className="group bg-[#09090b] border border-white/5 rounded-2xl overflow-hidden hover:border-indigo-500/30 transition-all hover:shadow-[0_0_30px_rgba(99,102,241,0.15)] cursor-pointer hover:-translate-y-1 flex flex-col"
                 >
                   <div className="h-40 bg-gradient-to-br from-[#111] to-[#1a1a1a] relative flex items-center justify-center p-8 group-hover:from-indigo-900/10 group-hover:to-purple-900/10 transition-colors">
                     <div className="w-full h-full bg-white/5 rounded-xl border border-white/5 relative overflow-hidden shadow-inner flex items-center justify-center">
                       <Icon className="w-10 h-10 text-zinc-600 group-hover:text-indigo-400 transition-colors" />
                     </div>
-                    <div className="absolute top-3 right-3">
-                      <button className="p-1.5 bg-black/40 backdrop-blur-md rounded-lg text-zinc-400 hover:text-white border border-white/10 hover:border-white/30 transition-all">
+                    <div className="absolute top-3 right-3 flex gap-1.5">
+                      {w.code && (
+                        <span className="px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[9px] font-bold uppercase tracking-wider rounded">
+                          Remix
+                        </span>
+                      )}
+                      <button className="p-1.5 bg-black/40 backdrop-blur-md rounded-lg text-zinc-400 hover:text-white border border-white/10 hover:border-white/30 transition-all" onClick={e => e.stopPropagation()}>
                         <MoreHorizontal className="w-4 h-4" />
                       </button>
                     </div>
