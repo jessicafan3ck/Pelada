@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   ArrowRight, Star, Sparkles, Cpu, Box, BarChart2,
   Target, Layout, Download, Activity, Shield,
-  TrendingUp, TrendingDown, Calendar,
+  TrendingUp, Calendar,
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -11,20 +11,6 @@ interface DashboardProps {
 }
 
 const WWC_START = new Date('2027-07-24T00:00:00');
-
-const FEATURED_MATCH = {
-  home: 'Brazil',   homeAbbr: 'BRA', homeColor: '#22c55e',
-  homeGrad: 'from-green-900 to-emerald-950',
-  away: 'Colombia', awayAbbr: 'COL', awayColor: '#f59e0b',
-  awayGrad: 'from-yellow-900 to-amber-950',
-  group: 'Group A', date: 'Jul 24', venue: 'Estádio Nacional · Brasília',
-};
-
-const OTHER_MATCHES = [
-  { home: 'Spain',     away: 'Japan',    group: 'Group B', date: 'Jul 26', homeColor: '#ef4444', awayColor: '#3b82f6' },
-  { home: 'England',   away: 'Germany',  group: 'Group C', date: 'Jul 27', homeColor: '#f9fafb', awayColor: '#1d4ed8' },
-  { home: 'Argentina', away: 'USA',      group: 'Group D', date: 'Jul 28', homeColor: '#60a5fa', awayColor: '#f87171' },
-];
 
 const RANKINGS = [
   { rank: 1,  name: 'Bonmati_AI',    score: 3140, role: 'Analyst'   },
@@ -90,6 +76,12 @@ function useCountdown() {
   return days;
 }
 
+const OTHER_MATCHES = [
+  { home: 'Spain',     away: 'Japan',    group: 'Group B', date: 'Jul 26', homeColor: '#ef4444', awayColor: '#3b82f6' },
+  { home: 'England',   away: 'Germany',  group: 'Group C', date: 'Jul 27', homeColor: '#f9fafb', awayColor: '#1d4ed8' },
+  { home: 'Argentina', away: 'USA',      group: 'Group D', date: 'Jul 28', homeColor: '#60a5fa', awayColor: '#f87171' },
+];
+
 export default function Dashboard({ onOpenAgent, onNavigate }: DashboardProps) {
   const days = useCountdown();
   const [activeCategory, setActiveCategory] = useState<Category>('all');
@@ -102,52 +94,47 @@ export default function Dashboard({ onOpenAgent, onNavigate }: DashboardProps) {
     <div className="space-y-10 pb-10">
 
       {/* ── WWC Banner ───────────────────────────────────────────────────────── */}
-      <div className="relative rounded-2xl overflow-hidden border border-white/5 bg-gradient-to-r from-[#050a14] via-[#0a1628] to-[#050a14] px-8 py-5 flex items-center justify-between">
-        <svg className="absolute inset-0 w-full h-full opacity-[0.04] pointer-events-none" viewBox="0 0 800 80" preserveAspectRatio="xMidYMid slice">
-          <rect x="20" y="4" width="760" height="72" stroke="white" strokeWidth="1" fill="none" rx="2" />
-          <line x1="20" y1="40" x2="780" y2="40" stroke="white" strokeWidth="1" />
-          <circle cx="400" cy="40" r="20" stroke="white" strokeWidth="1" fill="none" />
-        </svg>
-        <div className="relative z-10 flex items-center gap-6">
+      <div className="rounded-2xl border border-white/5 bg-black/40 px-8 py-5 flex items-center justify-between backdrop-blur-xl">
+        <div className="flex items-center gap-8">
           <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 mb-0.5">Women's World Cup 2027 · Brazil</div>
-            <h1 className="text-2xl font-black text-white tracking-tight leading-none">
-              Vai Ser{' '}
-              <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Épico.
-              </span>
-            </h1>
+            <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-600 mb-1">
+              Women's World Cup 2027 · Brazil
+            </div>
+            <div className="text-3xl font-black text-white tracking-tight">
+              Vai Ser <span className="text-cyan-400">Épico.</span>
+            </div>
           </div>
-          <div className="w-px h-10 bg-white/10" />
-          <div className="text-center">
-            <div className="text-3xl font-black text-white tabular-nums">{days}</div>
-            <div className="text-[9px] text-zinc-500 uppercase tracking-wider">Days Away</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-black text-white">32</div>
-            <div className="text-[9px] text-zinc-500 uppercase tracking-wider">Teams</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-black text-white">64</div>
-            <div className="text-[9px] text-zinc-500 uppercase tracking-wider">Matches</div>
+          <div className="w-px h-12 bg-white/10" />
+          <div className="flex items-center gap-8">
+            <div className="text-center">
+              <div className="text-3xl font-black text-white tabular-nums">{days}</div>
+              <div className="text-[9px] text-zinc-600 uppercase tracking-wider mt-0.5">Days Away</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-black text-white">32</div>
+              <div className="text-[9px] text-zinc-600 uppercase tracking-wider mt-0.5">Teams</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-black text-white">64</div>
+              <div className="text-[9px] text-zinc-600 uppercase tracking-wider mt-0.5">Matches</div>
+            </div>
           </div>
         </div>
-        <div className="relative z-10 text-right">
-          <div className="text-xs text-zinc-600">AI-powered analytics built for the</div>
-          <div className="text-xs text-zinc-500 font-semibold">biggest women's tournament in history.</div>
-        </div>
+        <p className="text-xs text-zinc-600 max-w-[220px] text-right leading-relaxed">
+          AI-powered football analytics built for the biggest women's tournament in history.
+        </p>
       </div>
 
-      {/* ── Main Grid: Match Center + Sidebar ───────────────────────────────── */}
+      {/* ── Main Grid ────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-12 gap-6 lg:gap-8">
 
         {/* Match Center — 8 col */}
         <div className="col-span-12 lg:col-span-8">
-          <div className="bg-black/40 backdrop-blur-2xl rounded-[32px] border border-white/5 overflow-hidden shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] relative h-full flex flex-col min-h-[420px]">
+          <div className="bg-black/40 backdrop-blur-2xl rounded-[32px] border border-white/5 overflow-hidden shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] relative flex flex-col min-h-[420px]">
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
 
             {/* Header */}
-            <div className="p-8 border-b border-white/5 flex justify-between items-center relative z-10">
+            <div className="px-8 pt-8 pb-6 border-b border-white/5 flex justify-between items-center relative z-10 shrink-0">
               <div>
                 <h2 className="text-2xl font-bold text-white tracking-tight">WWC 2027 · Group Stage</h2>
                 <p className="text-sm text-zinc-500 mt-1 flex items-center gap-2">
@@ -162,60 +149,69 @@ export default function Dashboard({ onOpenAgent, onNavigate }: DashboardProps) {
               </button>
             </div>
 
-            {/* Featured match */}
+            {/* Featured match face-off */}
             <div
               onClick={() => onNavigate('simulation')}
-              className="flex-1 p-8 flex items-center justify-between relative z-10 bg-gradient-to-r from-zinc-900/50 to-black/50 m-6 mt-5 rounded-2xl border border-white/10 hover:border-white/20 transition-all cursor-pointer group overflow-hidden"
+              className="relative z-10 mx-6 my-5 bg-gradient-to-r from-zinc-900/50 to-black/50 rounded-2xl border border-white/10 hover:border-white/20 transition-all cursor-pointer group overflow-hidden"
             >
-              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
+              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent pointer-events-none" />
+              <div className="p-8 flex items-center justify-between">
 
-              {/* Home */}
-              <div className="flex flex-col items-center gap-4 relative z-10 w-1/3">
-                <div className={`w-20 h-20 bg-gradient-to-br ${FEATURED_MATCH.homeGrad} rounded-2xl flex items-center justify-center border border-white/10 shadow-[0_0_30px_rgba(34,197,94,0.25)] group-hover:scale-105 transition-transform`}>
-                  <Shield className="w-10 h-10 text-white" />
-                </div>
-                <div className="text-center">
-                  <h3 className="text-xl font-bold text-white">{FEATURED_MATCH.home}</h3>
-                  <span className="text-xs text-zinc-500 font-mono tracking-wider">HOME</span>
-                </div>
-              </div>
-
-              {/* VS info */}
-              <div className="flex flex-col items-center justify-center gap-2 relative z-10 w-1/3">
-                <div className="text-xs font-bold text-zinc-400 bg-white/10 px-4 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
-                  {FEATURED_MATCH.group} · {FEATURED_MATCH.date}
-                </div>
-                <span className="text-[10px] text-zinc-600 text-center">{FEATURED_MATCH.venue}</span>
-                <div className="mt-3 flex gap-3">
-                  <button
-                    onClick={e => { e.stopPropagation(); onNavigate('simulation'); }}
-                    className="px-4 py-2 bg-white text-black text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-zinc-200 transition-colors shadow-lg"
+                {/* Home — Brazil */}
+                <div className="flex flex-col items-center gap-4 w-1/3">
+                  <div
+                    className="w-20 h-20 rounded-2xl flex items-center justify-center border border-white/10 group-hover:scale-105 transition-transform"
+                    style={{ background: 'linear-gradient(135deg, #14532d, #065f46)', boxShadow: '0 0 30px rgba(34,197,94,0.25)' }}
                   >
-                    Simulate
-                  </button>
-                  <button
-                    onClick={e => { e.stopPropagation(); onNavigate('lineup'); }}
-                    className="px-4 py-2 bg-white/10 text-white text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-white/20 transition-colors border border-white/10"
-                  >
-                    Lineup
-                  </button>
+                    <Shield className="w-10 h-10 text-white" />
+                  </div>
+                  <div className="text-center">
+                    <h3 className="text-xl font-bold text-white">Brazil</h3>
+                    <span className="text-xs text-zinc-500 font-mono tracking-wider">HOME</span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Away */}
-              <div className="flex flex-col items-center gap-4 relative z-10 w-1/3">
-                <div className={`w-20 h-20 bg-gradient-to-br ${FEATURED_MATCH.awayGrad} rounded-2xl flex items-center justify-center border border-white/10 shadow-[0_0_30px_rgba(245,158,11,0.25)] group-hover:scale-105 transition-transform`}>
-                  <Shield className="w-10 h-10 text-white" />
+                {/* Centre info */}
+                <div className="flex flex-col items-center gap-3 w-1/3">
+                  <div className="text-xs font-bold text-zinc-400 bg-white/10 px-4 py-1.5 rounded-full border border-white/10">
+                    Group A · Jul 24
+                  </div>
+                  <span className="text-[10px] text-zinc-600 text-center">Estádio Nacional · Brasília</span>
+                  <div className="flex gap-3 mt-1">
+                    <button
+                      onClick={e => { e.stopPropagation(); onNavigate('simulation'); }}
+                      className="px-4 py-2 bg-white text-black text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-zinc-200 transition-colors shadow-lg"
+                    >
+                      Simulate
+                    </button>
+                    <button
+                      onClick={e => { e.stopPropagation(); onNavigate('lineup'); }}
+                      className="px-4 py-2 bg-white/10 text-white text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-white/20 transition-colors border border-white/10"
+                    >
+                      Lineup
+                    </button>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <h3 className="text-xl font-bold text-white">{FEATURED_MATCH.away}</h3>
-                  <span className="text-xs text-zinc-500 font-mono tracking-wider">AWAY</span>
+
+                {/* Away — Colombia */}
+                <div className="flex flex-col items-center gap-4 w-1/3">
+                  <div
+                    className="w-20 h-20 rounded-2xl flex items-center justify-center border border-white/10 group-hover:scale-105 transition-transform"
+                    style={{ background: 'linear-gradient(135deg, #78350f, #92400e)', boxShadow: '0 0 30px rgba(245,158,11,0.25)' }}
+                  >
+                    <Shield className="w-10 h-10 text-white" />
+                  </div>
+                  <div className="text-center">
+                    <h3 className="text-xl font-bold text-white">Colombia</h3>
+                    <span className="text-xs text-zinc-500 font-mono tracking-wider">AWAY</span>
+                  </div>
                 </div>
+
               </div>
             </div>
 
             {/* Other matches */}
-            <div className="px-6 pb-6 grid grid-cols-3 gap-3 relative z-10">
+            <div className="px-6 pb-6 grid grid-cols-3 gap-3 relative z-10 shrink-0">
               {OTHER_MATCHES.map((m, i) => (
                 <div
                   key={i}
@@ -223,12 +219,12 @@ export default function Dashboard({ onOpenAgent, onNavigate }: DashboardProps) {
                   className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 hover:bg-white/[0.06] cursor-pointer transition-all"
                 >
                   <div className="text-[9px] text-zinc-600 font-bold uppercase tracking-wider">{m.group} · {m.date}</div>
-                  <div className="flex items-center gap-2 w-full justify-center">
-                    <div className="w-2 h-2 rounded-full" style={{ background: m.homeColor }} />
-                    <span className="text-xs font-bold text-white">{m.home}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full shrink-0" style={{ background: m.homeColor }} />
+                    <span className="text-[11px] font-bold text-white">{m.home}</span>
                     <span className="text-[10px] text-zinc-600">vs</span>
-                    <span className="text-xs font-bold text-white">{m.away}</span>
-                    <div className="w-2 h-2 rounded-full" style={{ background: m.awayColor }} />
+                    <span className="text-[11px] font-bold text-white">{m.away}</span>
+                    <div className="w-2 h-2 rounded-full shrink-0" style={{ background: m.awayColor }} />
                   </div>
                 </div>
               ))}
@@ -241,36 +237,30 @@ export default function Dashboard({ onOpenAgent, onNavigate }: DashboardProps) {
           <div className="bg-black/40 backdrop-blur-2xl rounded-[32px] border border-white/5 p-8 h-full flex flex-col shadow-xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 blur-[50px] rounded-full pointer-events-none" />
 
-            {/* Trending */}
             <div className="text-xs font-bold text-zinc-500 mb-5 uppercase tracking-[0.15em] flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-zinc-600" /> Community Pulse
             </div>
             <div className="space-y-3 mb-6">
-              <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/5 hover:bg-white/[0.06] transition-colors cursor-pointer group">
+              <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/5 hover:bg-white/[0.06] transition-colors cursor-pointer">
                 <div className="flex items-center gap-3 mb-1.5">
-                  <div className="p-1.5 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-lg text-purple-400">
-                    <TrendingUp className="w-3.5 h-3.5" />
-                  </div>
+                  <div className="p-1.5 bg-purple-500/10 rounded-lg"><TrendingUp className="w-3.5 h-3.5 text-purple-400" /></div>
                   <span className="text-xs font-bold text-white">Most Downloaded</span>
                 </div>
                 <p className="text-[11px] text-zinc-500 leading-relaxed">
                   "GOAT XI Builder — WWC Edition" trending with 19k+ downloads.
                 </p>
               </div>
-              <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/5 hover:bg-white/[0.06] transition-colors cursor-pointer group">
+              <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/5 hover:bg-white/[0.06] transition-colors cursor-pointer">
                 <div className="flex items-center gap-3 mb-1.5">
-                  <div className="p-1.5 bg-gradient-to-br from-cyan-500/20 to-teal-500/20 rounded-lg text-cyan-400">
-                    <Activity className="w-3.5 h-3.5" />
-                  </div>
+                  <div className="p-1.5 bg-cyan-500/10 rounded-lg"><Activity className="w-3.5 h-3.5 text-cyan-400" /></div>
                   <span className="text-xs font-bold text-white">New Model</span>
                 </div>
                 <p className="text-[11px] text-zinc-500 leading-relaxed">
-                  @Bonmati_AI published Flair Index v2 — now with WWC 2027 squad data.
+                  @Bonmati_AI published Flair Index v2 with WWC 2027 squad data.
                 </p>
               </div>
             </div>
 
-            {/* Rankings */}
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
                 <BarChart2 className="w-3.5 h-3.5 text-yellow-500/60" /> Global Rankings
@@ -355,7 +345,7 @@ export default function Dashboard({ onOpenAgent, onNavigate }: DashboardProps) {
                 <div className="flex items-center gap-3 text-xs text-zinc-400 mb-5 font-medium border-b border-white/5 pb-4">
                   <span className="flex items-center gap-1.5 text-zinc-300">
                     <div className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-[8px] text-white font-bold">
-                      {item.author[0]}
+                      {item.author[0].toUpperCase()}
                     </div>
                     {item.author}
                   </span>
