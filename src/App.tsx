@@ -30,6 +30,14 @@ type ViewType =
   | 'lineup' | 'community' | 'similarity' | 'goatbuilder' | 'lineupvalidator'
   | 'simulation';
 
+// Per-category accent colours — full static strings so Tailwind JIT includes them
+const CATEGORY_ACCENT = {
+  General: { grad: 'from-sky-500/20 to-blue-700/5',     icon: 'text-sky-400',    dot: 'bg-sky-400',    dotGlow: 'shadow-[0_0_8px_rgba(56,189,248,0.8)]',    label: 'text-sky-600'    },
+  Explore: { grad: 'from-green-500/20 to-emerald-700/5', icon: 'text-green-400',  dot: 'bg-green-400',  dotGlow: 'shadow-[0_0_8px_rgba(74,222,128,0.8)]',   label: 'text-green-600'  },
+  Create:  { grad: 'from-yellow-500/20 to-orange-500/5', icon: 'text-yellow-400', dot: 'bg-yellow-400', dotGlow: 'shadow-[0_0_8px_rgba(250,204,21,0.8)]',   label: 'text-yellow-600' },
+  Analyst: { grad: 'from-pink-500/20 to-rose-700/5',     icon: 'text-pink-400',   dot: 'bg-pink-400',   dotGlow: 'shadow-[0_0_8px_rgba(244,114,182,0.8)]',  label: 'text-pink-600'   },
+} as const;
+
 function AppShell() {
   const [currentView, setCurrentView] = useState<ViewType>('lineup');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -85,9 +93,9 @@ function AppShell() {
     <div className="flex h-screen bg-[#050505] text-zinc-100 font-sans overflow-hidden selection:bg-cyan-500/30 relative">
       {/* Liquid mesh background */}
       <div className="absolute inset-0 z-0 opacity-40 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-600/20 blur-[120px] rounded-full mix-blend-screen animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-blue-600/20 blur-[100px] rounded-full mix-blend-screen animate-pulse" style={{ animationDuration: '10s' }} />
-        <div className="absolute top-[40%] left-[60%] w-[30%] h-[30%] bg-indigo-600/10 blur-[80px] rounded-full mix-blend-screen" />
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-green-500/15 blur-[120px] rounded-full mix-blend-screen animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-sky-500/15 blur-[100px] rounded-full mix-blend-screen animate-pulse" style={{ animationDuration: '10s' }} />
+        <div className="absolute top-[40%] left-[60%] w-[30%] h-[30%] bg-pink-500/10 blur-[80px] rounded-full mix-blend-screen" />
       </div>
 
       {/* Sidebar */}
@@ -96,13 +104,13 @@ function AppShell() {
         <div className="h-20 flex items-center px-6 border-b border-white/5 relative overflow-hidden shrink-0">
           <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-transparent pointer-events-none" />
           <div className="flex items-center gap-3 relative z-10">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-[0_0_16px_rgba(139,92,246,0.5)] shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-sky-500 flex items-center justify-center shadow-[0_0_16px_rgba(74,222,128,0.4)] shrink-0">
               <Zap className="w-4 h-4 text-white" />
             </div>
             {isSidebarOpen && (
               <div className="flex flex-col">
                 <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">Pelada</span>
-                <span className="text-[10px] uppercase tracking-[0.2em] text-purple-400 font-medium">Analytics OS</span>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-lime-400 font-medium">Analytics OS</span>
               </div>
             )}
           </div>
@@ -110,33 +118,36 @@ function AppShell() {
 
         {/* Nav */}
         <div className="flex-1 overflow-y-auto py-6 px-3 space-y-6">
-          {categories.map(category => (
-            <div key={category}>
-              {isSidebarOpen && (
-                <div className="px-3 mb-2 text-[10px] font-bold text-zinc-600 uppercase tracking-[0.15em]">{category}</div>
-              )}
-              <div className="space-y-1">
-                {visibleNav.filter(i => i.category === category).map(item => {
-                  const Icon = item.icon;
-                  const isActive = currentView === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setCurrentView(item.id)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative overflow-hidden ${
-                        isActive ? 'text-white' : 'text-zinc-400 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      {isActive && <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-blue-600/5 border border-white/5 rounded-xl" />}
-                      <Icon className={`w-4 h-4 relative z-10 shrink-0 ${isActive ? 'text-purple-400' : 'group-hover:text-zinc-200'}`} />
-                      {isSidebarOpen && <span className="relative z-10 truncate">{item.name}</span>}
-                      {isActive && isSidebarOpen && <div className="absolute right-3 w-1.5 h-1.5 rounded-full bg-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.8)]" />}
-                    </button>
-                  );
-                })}
+          {categories.map(category => {
+            const accent = CATEGORY_ACCENT[category as keyof typeof CATEGORY_ACCENT] ?? CATEGORY_ACCENT.General;
+            return (
+              <div key={category}>
+                {isSidebarOpen && (
+                  <div className={`px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.15em] ${accent.label}`}>{category}</div>
+                )}
+                <div className="space-y-1">
+                  {visibleNav.filter(i => i.category === category).map(item => {
+                    const Icon = item.icon;
+                    const isActive = currentView === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setCurrentView(item.id)}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative overflow-hidden ${
+                          isActive ? 'text-white' : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        {isActive && <div className={`absolute inset-0 bg-gradient-to-r ${accent.grad} border border-white/5 rounded-xl`} />}
+                        <Icon className={`w-4 h-4 relative z-10 shrink-0 ${isActive ? accent.icon : 'group-hover:text-zinc-200'}`} />
+                        {isSidebarOpen && <span className="relative z-10 truncate">{item.name}</span>}
+                        {isActive && isSidebarOpen && <div className={`absolute right-3 w-1.5 h-1.5 rounded-full ${accent.dot} ${accent.dotGlow}`} />}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Mode toggle + user */}
@@ -147,7 +158,7 @@ function AppShell() {
               onClick={() => setUserMode('fan')}
               className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 userMode === 'fan'
-                  ? 'bg-white/15 text-white'
+                  ? 'bg-sky-500/20 text-sky-200 border border-sky-500/20'
                   : 'text-zinc-500 hover:text-zinc-300'
               } ${!isSidebarOpen ? 'px-0 text-center' : 'px-2'}`}
             >
@@ -157,7 +168,7 @@ function AppShell() {
               onClick={() => setUserMode('analyst')}
               className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 userMode === 'analyst'
-                  ? 'bg-purple-600/30 text-purple-200 border border-purple-500/30'
+                  ? 'bg-pink-500/20 text-pink-200 border border-pink-500/30'
                   : 'text-zinc-500 hover:text-zinc-300'
               } ${!isSidebarOpen ? 'px-0 text-center' : 'px-2'}`}
             >
@@ -203,7 +214,7 @@ function AppShell() {
           <div className="flex items-center gap-2 shrink-0">
             <button className="p-2 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white transition-all relative">
               <Bell className="w-4 h-4" />
-              <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-purple-500 rounded-full" />
+              <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-pink-500 rounded-full" />
             </button>
             <button className="flex items-center gap-2 px-4 py-2 bg-white text-black text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-zinc-200 transition-all shadow-[0_0_16px_rgba(255,255,255,0.15)]">
               <Globe className="w-3 h-3" />

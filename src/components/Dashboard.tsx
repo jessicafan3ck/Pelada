@@ -29,27 +29,27 @@ const RANKINGS = [
 const ARTIFACTS = [
   {
     id: 1, type: 'widget',    title: 'xG Momentum Flow',              author: 'DataViz_Pro',  downloads: '8.2k',  rating: 4.9, tags: ['Visualization', 'xG'],
-    image: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',    icon: Box,      nav: 'widgets',
+    image: 'linear-gradient(135deg, #0d1832 0%, #2B3F9E 100%)',    icon: Box,      nav: 'widgets',
   },
   {
     id: 2, type: 'model',     title: 'Collapse Predictor v2',         author: 'Pelada_Labs',  downloads: '5.1k',  rating: 4.8, tags: ['ML', 'Defense'],
-    image: 'linear-gradient(135deg, #4a044e 0%, #701a75 100%)',    icon: Cpu,      nav: 'models',
+    image: 'linear-gradient(135deg, #2a0020 0%, #C2298A 100%)',    icon: Cpu,      nav: 'models',
   },
   {
     id: 3, type: 'tactics',   title: 'Inverted Wingback Overload',    author: 'tactician_88', downloads: '12k',   rating: 4.7, tags: ['Pressing', 'Width'],
-    image: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)',    icon: Target,   nav: 'tactics',
+    image: 'linear-gradient(135deg, #2a0808 0%, #E53935 100%)',    icon: Target,   nav: 'tactics',
   },
   {
     id: 4, type: 'widget',    title: 'GOAT XI Builder — WWC Edition', author: 'jessica_fan',  downloads: '19k',   rating: 5.0, tags: ['Fan', 'Interactive'],
-    image: 'linear-gradient(135deg, #3b0764 0%, #6b21a8 100%)',    icon: Star,     nav: 'widgets',
+    image: 'linear-gradient(135deg, #1a2000 0%, #C9D426 100%)',    icon: Star,     nav: 'widgets',
   },
   {
     id: 5, type: 'model',     title: 'Flair Index — WWC 2027',        author: 'xG_Prophet',   downloads: '3.4k',  rating: 4.6, tags: ['Creativity', 'Player'],
-    image: 'linear-gradient(135deg, #064e3b 0%, #065f46 100%)',    icon: Activity, nav: 'models',
+    image: 'linear-gradient(135deg, #082008 0%, #4CAF50 100%)',    icon: Activity, nav: 'models',
   },
   {
     id: 6, type: 'formation', title: '3-4-3 Barcelona Replica',       author: 'Bonmati_AI',   downloads: '9.8k',  rating: 4.8, tags: ['Positional', 'Press'],
-    image: 'linear-gradient(135deg, #7c2d12 0%, #9a3412 100%)',    icon: Layout,   nav: 'formation',
+    image: 'linear-gradient(135deg, #2a1000 0%, #F04A36 100%)',    icon: Layout,   nav: 'formation',
   },
 ];
 
@@ -356,6 +356,16 @@ export default function Dashboard({ onOpenAgent, onNavigate }: DashboardProps) {
             >
               <div className="h-48 w-full relative overflow-hidden">
                 <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-110" style={{ background: item.image }} />
+                {/* Chevron pattern overlay */}
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.1 }} aria-hidden="true">
+                  <defs>
+                    <pattern id={`chv-${item.id}`} x="0" y="0" width="50" height="35" patternUnits="userSpaceOnUse">
+                      <polyline points="0,0 25,17 50,0"  stroke="white" strokeWidth="3.5" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+                      <polyline points="0,17 25,35 50,17" stroke="white" strokeWidth="3.5" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill={`url(#chv-${item.id})`} />
+                </svg>
                 <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-transparent to-transparent opacity-90" />
                 <div className="absolute top-4 left-4 px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-lg text-[10px] font-bold text-white uppercase tracking-wider border border-white/10 flex items-center gap-2">
                   <item.icon className="w-3 h-3 text-purple-400" />
