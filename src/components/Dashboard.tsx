@@ -1,524 +1,335 @@
-import { useState } from 'react';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  AlertTriangle, 
-  Activity, 
-  Users, 
-  ArrowRight, 
-  Star, 
-  Clock, 
-  Calendar, 
-  Shield, 
-  PlayCircle, 
-  Sparkles, 
-  ChevronDown, 
-  Target, 
-  Cpu, 
-  Box, 
-  Layout, 
-  BarChart2,
-  Download
+import { useState, useEffect } from 'react';
+import {
+  ArrowRight, Star, Sparkles, Cpu, Box, BarChart2,
+  Target, Layout, Download, Activity, Zap, Users2,
+  Play, Globe,
 } from 'lucide-react';
 
 interface DashboardProps {
   onOpenAgent: () => void;
+  onNavigate: (view: string) => void;
 }
 
-type Category = 'all' | 'tactics' | 'models' | 'widgets' | 'formations' | 'benchmarks';
+// ── WWC 2027 data ─────────────────────────────────────────────────────────────
 
-export default function Dashboard({ onOpenAgent }: DashboardProps) {
-  const [hasActiveMatch, setHasActiveMatch] = useState(false);
-  const [selectedTeam, setSelectedTeam] = useState('Man City');
-  const [activeCategory, setActiveCategory] = useState<Category>('all');
+const WWC_START = new Date('2027-07-24T00:00:00');
 
-  const myTeams = ['Man City', 'Barcelona', 'Inter Miami'];
+const FEATURED_MATCHES = [
+  { id: 1, home: 'Brazil',    away: 'Colombia', group: 'Group A', date: 'Jul 24', homeColor: '#22c55e', awayColor: '#f59e0b' },
+  { id: 2, home: 'Spain',     away: 'Japan',    group: 'Group B', date: 'Jul 26', homeColor: '#ef4444', awayColor: '#3b82f6' },
+  { id: 3, home: 'England',   away: 'Germany',  group: 'Group C', date: 'Jul 27', homeColor: '#f9fafb', awayColor: '#1d4ed8' },
+  { id: 4, home: 'Argentina', away: 'USA',      group: 'Group D', date: 'Jul 28', homeColor: '#60a5fa', awayColor: '#f87171' },
+];
 
-  const upcomingMatches = [
-    {
-      id: 1,
-      home: 'Man City',
-      away: 'Bayern',
-      competition: 'Champions League',
-      time: '20:00',
-      date: 'Today',
-      status: 'upcoming'
-    }
-  ];
+const PERSONAS = [
+  {
+    id: 'widgets',
+    label: 'Watch & Share',
+    role: 'Fan',
+    desc: 'Browse match widgets, build your GOAT XI, and share to TikTok or anywhere.',
+    grad: 'from-pink-900/20 to-purple-900/10',
+    border: 'border-pink-500/20 hover:border-pink-500/40',
+    shadow: 'hover:shadow-[0_0_30px_rgba(236,72,153,0.12)]',
+    accent: 'text-pink-400',
+    iconBg: 'bg-pink-500/10',
+    icon: Box,
+    cta: 'Explore Widgets',
+  },
+  {
+    id: 'widgets',
+    label: 'Build & Publish',
+    role: 'Creator',
+    desc: 'Generate custom analytics widgets with AI and publish them to the community.',
+    grad: 'from-indigo-900/20 to-blue-900/10',
+    border: 'border-indigo-500/20 hover:border-indigo-500/40',
+    shadow: 'hover:shadow-[0_0_30px_rgba(99,102,241,0.12)]',
+    accent: 'text-indigo-400',
+    iconBg: 'bg-indigo-500/10',
+    icon: Sparkles,
+    cta: 'Open Widget Builder',
+  },
+  {
+    id: 'models',
+    label: 'Model & Predict',
+    role: 'Analyst',
+    desc: 'Design ML models with AI, run Python locally via the Pelada Agent, simulate matches with MCMC.',
+    grad: 'from-cyan-900/20 to-teal-900/10',
+    border: 'border-cyan-500/20 hover:border-cyan-500/40',
+    shadow: 'hover:shadow-[0_0_30px_rgba(6,182,212,0.12)]',
+    accent: 'text-cyan-400',
+    iconBg: 'bg-cyan-500/10',
+    icon: Cpu,
+    cta: 'Open Model Sandbox',
+  },
+];
 
-  const rankings = [
-    { rank: 1, name: 'PepG_Official', score: 2840, role: 'Tactician' },
-    { rank: 2, name: 'Klopp_Gegen', score: 2790, role: 'Manager' },
-    { rank: 3, name: 'Mourinho_Bus', score: 2750, role: 'Analyst' },
-    { rank: 4, name: 'Tactical_Genius', score: 2680, role: 'Strategist' },
-    { rank: 5, name: 'Pelada_Labs', score: 2620, role: 'Developer' },
-    { rank: 6, name: 'DataViz_Pro', score: 2580, role: 'Analyst' },
-    { rank: 7, name: 'ScoutMaster', score: 2540, role: 'Scout' },
-    { rank: 8, name: 'Simeone_Fan', score: 2490, role: 'Tactician' },
-    { rank: 9, name: 'Analyst_Mike', score: 2450, role: 'Analyst' },
-    { rank: 10, name: 'City_Watcher', score: 2410, role: 'Observer' },
-  ];
+const RANKINGS = [
+  { rank: 1, name: 'Bonmati_AI',     score: 3140, role: 'Analyst' },
+  { rank: 2, name: 'tactician_88',   score: 2980, role: 'Creator' },
+  { rank: 3, name: 'Pelada_Labs',    score: 2840, role: 'Developer' },
+  { rank: 4, name: 'xG_Prophet',     score: 2790, role: 'Analyst' },
+  { rank: 5, name: 'jessica_fan',    score: 2740, role: 'Builder' },
+  { rank: 6, name: 'DataViz_Pro',    score: 2680, role: 'Creator' },
+  { rank: 7, name: 'ScoutMaster',    score: 2610, role: 'Scout' },
+  { rank: 8, name: 'Simeone_Fan',    score: 2550, role: 'Tactician' },
+];
 
-  // Mock Data for Community Artifacts
-  const artifacts = [
-    {
-      id: 1,
-      type: 'tactics',
-      title: 'Inverted Wingback Overload',
-      author: 'PepG_Official',
-      downloads: '12.4k',
-      rating: 4.9,
-      tags: ['Positional Play', 'High Press'],
-      image: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-      icon: Target
-    },
-    {
-      id: 2,
-      type: 'widgets',
-      title: 'xG Momentum Flow',
-      author: 'DataViz_Pro',
-      downloads: '8.2k',
-      rating: 4.7,
-      tags: ['Visualization', 'xG'],
-      image: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
-      icon: Box
-    },
-    {
-      id: 3,
-      type: 'models',
-      title: 'Defensive Collapse Predictor v2',
-      author: 'Pelada_Labs',
-      downloads: '5.1k',
-      rating: 4.8,
-      tags: ['ML', 'Defense'],
-      image: 'linear-gradient(135deg, #4a044e 0%, #701a75 100%)',
-      icon: Cpu
-    },
-    {
-      id: 4,
-      type: 'formations',
-      title: '3-2-4-1 City Replica',
-      author: 'Tactical_Genius',
-      downloads: '3.4k',
-      rating: 4.6,
-      tags: ['Man City', 'Meta'],
-      image: 'linear-gradient(135deg, #064e3b 0%, #065f46 100%)',
-      icon: Layout
-    },
-    {
-      id: 5,
-      type: 'benchmarks',
-      title: 'Elite Winger KPIs 2024',
-      author: 'ScoutMaster',
-      downloads: '2.1k',
-      rating: 4.9,
-      tags: ['Scouting', 'Data'],
-      image: 'linear-gradient(135deg, #7c2d12 0%, #9a3412 100%)',
-      icon: BarChart2
-    },
-    {
-      id: 6,
-      type: 'tactics',
-      title: 'Low Block Counter',
-      author: 'Simeone_Fan',
-      downloads: '9.8k',
-      rating: 4.5,
-      tags: ['Defense', 'Counter'],
-      image: 'linear-gradient(135deg, #3f3f46 0%, #52525b 100%)',
-      icon: Target
-    }
-  ];
+const ARTIFACTS = [
+  { id: 1, type: 'widget',    title: 'xG Momentum Flow',              author: 'DataViz_Pro',   downloads: '8.2k', rating: 4.9, tags: ['Visualization', 'xG'],    grad: 'from-[#1e1b4b] to-[#312e81]', icon: Box,      nav: 'widgets' },
+  { id: 2, type: 'model',     title: 'Collapse Predictor v2',         author: 'Pelada_Labs',   downloads: '5.1k', rating: 4.8, tags: ['ML', 'Defense'],           grad: 'from-[#4a044e] to-[#701a75]', icon: Cpu,      nav: 'models' },
+  { id: 3, type: 'tactics',   title: 'Inverted Wingback Overload',    author: 'tactician_88',  downloads: '12k',  rating: 4.7, tags: ['Pressing', 'Width'],        grad: 'from-[#0f172a] to-[#1e3a5f]', icon: Target,   nav: 'tactics' },
+  { id: 4, type: 'widget',    title: 'GOAT XI Builder — WWC Edition', author: 'jessica_fan',   downloads: '19k',  rating: 5.0, tags: ['Fan', 'Interactive'],       grad: 'from-[#3b0764] to-[#6b21a8]', icon: Users2,   nav: 'widgets' },
+  { id: 5, type: 'model',     title: 'Flair Index — WWC 2027',        author: 'xG_Prophet',    downloads: '3.4k', rating: 4.6, tags: ['Creativity', 'Player'],     grad: 'from-[#064e3b] to-[#065f46]', icon: Activity, nav: 'models' },
+  { id: 6, type: 'formation', title: '3-4-3 Barcelona Replica',       author: 'Bonmati_AI',    downloads: '9.8k', rating: 4.8, tags: ['Positional', 'Press'],      grad: 'from-[#7c2d12] to-[#9a3412]', icon: Layout,   nav: 'formation' },
+];
 
-  const filteredArtifacts = activeCategory === 'all' 
-    ? artifacts 
-    : artifacts.filter(item => item.type === activeCategory);
+// ── Countdown ─────────────────────────────────────────────────────────────────
 
-  const categories = [
-    { id: 'all', label: 'All', icon: Sparkles },
-    { id: 'tactics', label: 'Tactics', icon: Target },
-    { id: 'models', label: 'Models', icon: Cpu },
-    { id: 'widgets', label: 'Widgets', icon: Box },
-    { id: 'formations', label: 'Formations', icon: Layout },
-    { id: 'benchmarks', label: 'Benchmarks', icon: BarChart2 }, // Changed icon to BarChart2 as Trophy is used elsewhere
-  ];
+function useCountdown() {
+  const [days, setDays] = useState(0);
+  useEffect(() => {
+    const update = () => {
+      const diff = WWC_START.getTime() - Date.now();
+      setDays(Math.max(0, Math.floor(diff / 86_400_000)));
+    };
+    update();
+    const id = setInterval(update, 60_000);
+    return () => clearInterval(id);
+  }, []);
+  return days;
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+export default function Dashboard({ onOpenAgent, onNavigate }: DashboardProps) {
+  const [activeType, setActiveType] = useState<string>('all');
+  const days = useCountdown();
+
+  const filtered = activeType === 'all' ? ARTIFACTS : ARTIFACTS.filter(a => a.type === activeType);
+  const types = ['all', 'widget', 'model', 'tactics', 'formation'];
 
   return (
     <div className="space-y-10 pb-10">
-      {/* State Toggle for Demo */}
-      <div className="absolute top-28 right-10 z-50">
-        <button 
-          onClick={() => setHasActiveMatch(!hasActiveMatch)}
-          className="text-[10px] text-zinc-600 hover:text-white bg-black/50 px-3 py-1 rounded-full border border-white/5 transition-colors"
-        >
-          {hasActiveMatch ? 'Simulate: No Match' : 'Simulate: Live Match'}
+
+      {/* ── WWC 2027 Hero ─────────────────────────────────────────────────── */}
+      <div className="relative rounded-[32px] overflow-hidden border border-white/5 shadow-2xl min-h-[320px] flex flex-col">
+        {/* Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#050a14] via-[#0a1628] to-[#050a14]" />
+        <svg className="absolute inset-0 w-full h-full opacity-[0.04] pointer-events-none" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid slice">
+          <rect x="50" y="10"  width="700" height="300" stroke="white" strokeWidth="1" fill="none" rx="2" />
+          <line x1="50" y1="160" x2="750" y2="160" stroke="white" strokeWidth="1" />
+          <circle cx="400" cy="160" r="60" stroke="white" strokeWidth="1" fill="none" />
+          <rect x="175" y="10"  width="150" height="65" stroke="white" strokeWidth="1" fill="none" />
+          <rect x="475" y="10"  width="150" height="65" stroke="white" strokeWidth="1" fill="none" />
+          <rect x="175" y="245" width="150" height="65" stroke="white" strokeWidth="1" fill="none" />
+          <rect x="475" y="245" width="150" height="65" stroke="white" strokeWidth="1" fill="none" />
+        </svg>
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-900/20 via-transparent to-cyan-900/10 pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col lg:flex-row gap-0 flex-1">
+          {/* Left — branding */}
+          <div className="flex-1 p-10 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-5">
+                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/40 border border-white/10 px-3 py-1 rounded-full">
+                  Women's World Cup 2027 · Brazil
+                </span>
+              </div>
+              <h1 className="text-5xl font-black text-white tracking-tight leading-none mb-2">
+                Vai Ser<br />
+                <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  Épico.
+                </span>
+              </h1>
+              <p className="text-zinc-400 text-sm mt-4 max-w-sm leading-relaxed">
+                AI-powered football analytics built for the biggest women's tournament in history.
+                Every match. Every model. Every moment.
+              </p>
+            </div>
+            <div className="flex items-center gap-6 mt-8">
+              <div className="text-center">
+                <div className="text-4xl font-black text-white tabular-nums">{days}</div>
+                <div className="text-[10px] text-zinc-500 uppercase tracking-wider mt-1">Days Away</div>
+              </div>
+              <div className="w-px h-12 bg-white/10" />
+              <div className="text-center">
+                <div className="text-4xl font-black text-white">32</div>
+                <div className="text-[10px] text-zinc-500 uppercase tracking-wider mt-1">Teams</div>
+              </div>
+              <div className="w-px h-12 bg-white/10" />
+              <div className="text-center">
+                <div className="text-4xl font-black text-white">64</div>
+                <div className="text-[10px] text-zinc-500 uppercase tracking-wider mt-1">Matches</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right — featured matches */}
+          <div className="lg:w-[420px] p-6 flex flex-col justify-center gap-3 border-l border-white/5">
+            <div className="text-[10px] text-zinc-600 uppercase tracking-wider font-bold mb-1 flex items-center gap-2">
+              <Globe className="w-3 h-3" /> Group Stage Preview
+            </div>
+            {FEATURED_MATCHES.map(m => (
+              <div
+                key={m.id}
+                onClick={() => onNavigate('simulation')}
+                className="group flex items-center justify-between bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 hover:border-white/10 rounded-2xl px-5 py-3.5 cursor-pointer transition-all"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: m.homeColor }} />
+                  <span className="text-sm font-bold text-white truncate">{m.home}</span>
+                </div>
+                <div className="flex flex-col items-center shrink-0 px-3">
+                  <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider">{m.group}</span>
+                  <span className="text-[9px] text-zinc-700">{m.date}</span>
+                </div>
+                <div className="flex items-center gap-3 min-w-0 justify-end">
+                  <span className="text-sm font-bold text-white truncate">{m.away}</span>
+                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: m.awayColor }} />
+                </div>
+                <Play className="w-3.5 h-3.5 text-zinc-600 group-hover:text-cyan-400 ml-3 shrink-0 transition-colors" />
+              </div>
+            ))}
+            <button
+              onClick={() => onNavigate('simulation')}
+              className="mt-1 w-full py-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-bold uppercase tracking-wider hover:bg-cyan-500/20 transition-colors flex items-center justify-center gap-2"
+            >
+              <Zap className="w-3.5 h-3.5" /> Run MCMC Simulation
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Three Personas ────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {PERSONAS.map((p, i) => (
+          <div
+            key={i}
+            onClick={() => onNavigate(p.id)}
+            className={`group bg-gradient-to-br ${p.grad} border ${p.border} ${p.shadow} rounded-3xl p-7 cursor-pointer transition-all hover:-translate-y-1 flex flex-col gap-5`}
+          >
+            <div className="flex items-start justify-between">
+              <div className={`p-3 ${p.iconBg} rounded-2xl`}>
+                <p.icon className={`w-6 h-6 ${p.accent}`} />
+              </div>
+              <span className={`text-[10px] font-black uppercase tracking-widest ${p.accent} opacity-60`}>{p.role}</span>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-bold text-white mb-2 group-hover:opacity-90">{p.label}</h3>
+              <p className="text-xs text-zinc-500 leading-relaxed">{p.desc}</p>
+            </div>
+            <div className={`flex items-center gap-2 text-xs font-bold ${p.accent} group-hover:gap-3 transition-all`}>
+              {p.cta} <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Community + Rankings ──────────────────────────────────────────── */}
+      <div className="grid grid-cols-12 gap-6">
+
+        {/* Artifacts grid */}
+        <div className="col-span-12 lg:col-span-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-purple-400" /> Community Work
+            </h2>
+            <div className="flex gap-1.5 bg-black/40 border border-white/10 p-1 rounded-xl">
+              {types.map(t => (
+                <button
+                  key={t}
+                  onClick={() => setActiveType(t)}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${activeType === t ? 'bg-white text-black' : 'text-zinc-500 hover:text-white'}`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filtered.map(item => (
+              <div
+                key={item.id}
+                onClick={() => onNavigate(item.nav)}
+                className="group bg-[#09090b] border border-white/5 rounded-[22px] overflow-hidden hover:border-purple-500/40 hover:shadow-[0_0_25px_rgba(168,85,247,0.12)] hover:-translate-y-1 transition-all cursor-pointer"
+              >
+                <div className="h-36 relative overflow-hidden">
+                  <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-110" style={{ background: `linear-gradient(135deg, ${item.grad.replace('from-', '').replace('to-', '').split(' ').join(', ')})` }} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-transparent to-transparent" />
+                  <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 bg-black/50 backdrop-blur-md rounded-lg text-[9px] font-bold text-white/70 border border-white/10">
+                    <item.icon className="w-3 h-3 text-purple-400" /> {item.type}
+                  </div>
+                </div>
+                <div className="p-4">
+                  <h3 className="text-sm font-bold text-white mb-1 group-hover:text-purple-400 transition-colors line-clamp-1">{item.title}</h3>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-[10px] text-zinc-600">@{item.author}</span>
+                    <div className="flex items-center gap-3 text-[10px]">
+                      <span className="text-zinc-600 flex items-center gap-1"><Download className="w-3 h-3" />{item.downloads}</span>
+                      <span className="text-yellow-500 flex items-center gap-1 font-bold"><Star className="w-3 h-3 fill-yellow-500" />{item.rating}</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-1.5 mt-2">
+                    {item.tags.map(tag => (
+                      <span key={tag} className="text-[9px] px-2 py-0.5 bg-white/5 border border-white/5 text-zinc-600 rounded">{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Rankings sidebar */}
+        <div className="col-span-12 lg:col-span-4">
+          <div className="bg-black/40 backdrop-blur-xl rounded-3xl border border-white/5 p-6 h-full">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-sm font-bold text-white flex items-center gap-2">
+                <BarChart2 className="w-4 h-4 text-yellow-400" /> Global Rankings
+              </h2>
+              <span className="text-[10px] text-purple-400 cursor-pointer hover:text-white transition-colors">WWC 2027 Season</span>
+            </div>
+            <div className="space-y-2">
+              {RANKINGS.map(u => (
+                <div key={u.rank} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.025] border border-white/5 hover:border-purple-500/20 hover:bg-white/[0.04] transition-all cursor-pointer group">
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black border ${
+                    u.rank === 1 ? 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10' :
+                    u.rank === 2 ? 'text-zinc-300 border-zinc-500/30 bg-zinc-500/10' :
+                    u.rank === 3 ? 'text-orange-400 border-orange-500/30 bg-orange-500/10' :
+                    'text-zinc-600 border-white/5 bg-white/5'
+                  }`}>{u.rank}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-bold text-white truncate group-hover:text-purple-400 transition-colors">@{u.name}</div>
+                    <div className="text-[9px] text-zinc-600">{u.role}</div>
+                  </div>
+                  <div className="text-xs font-mono text-zinc-500">{u.score.toLocaleString()}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Co-Pilot CTA ─────────────────────────────────────────────────── */}
+      <div
+        onClick={onOpenAgent}
+        className="group bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-[24px] border border-white/10 hover:border-white/20 p-1 flex items-center justify-between cursor-pointer transition-all"
+      >
+        <div className="flex items-center gap-5 px-6 py-4">
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+            <Sparkles className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-white">Can't find what you need?</h3>
+            <p className="text-xs text-zinc-500">Ask Pelada Co-Pilot to generate a custom model, tactic, or widget.</p>
+          </div>
+        </div>
+        <button className="mr-5 px-5 py-2.5 bg-white text-black font-bold text-xs rounded-xl hover:bg-zinc-200 transition-colors flex items-center gap-2 whitespace-nowrap">
+          Open Co-Pilot <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {/* Hero Section */}
-      <div className="grid grid-cols-12 gap-6 lg:gap-8">
-        <div className="col-span-12 lg:col-span-8">
-          <div className="bg-black/40 backdrop-blur-2xl rounded-[32px] border border-white/5 overflow-hidden shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] group relative h-full flex flex-col min-h-[400px]">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
-            
-            {hasActiveMatch ? (
-              // --- ACTIVE LIVE MATCH VIEW ---
-              <>
-                <div className="p-8 border-b border-white/5 flex justify-between items-center relative z-10">
-                  <div>
-                    <h2 className="text-2xl font-bold text-white tracking-tight drop-shadow-lg">Active Match Analysis</h2>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_#22c55e]" />
-                      <p className="text-sm font-medium text-zinc-400">Live Network Health Monitoring • vs Real Madrid</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                     <div className="px-4 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold flex items-center gap-2 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.2)]">
-                       <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"></span>
-                       LIVE 72:34
-                     </div>
-                  </div>
-                </div>
-                
-                <div className="relative flex-1 bg-[#050505] p-8">
-                  {/* Pitch Visual */}
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-900/20 via-[#050505] to-[#050505]"></div>
-                  
-                  {/* Glass Pitch Markings */}
-                  <div className="relative h-full border border-white/10 rounded-2xl overflow-hidden shadow-inner bg-white/[0.02]">
-                     <div className="absolute top-0 bottom-0 left-1/2 w-px bg-white/10 shadow-[0_0_10px_rgba(255,255,255,0.1)]"></div>
-                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border border-white/10 rounded-full shadow-[0_0_20px_rgba(255,255,255,0.05)]"></div>
-                     
-                     {/* Dynamic Network Nodes Overlay */}
-                     <div className="absolute inset-0">
-                        <svg className="w-full h-full opacity-60 filter drop-shadow-[0_0_5px_rgba(168,85,247,0.5)]">
-                          <line x1="20%" y1="50%" x2="40%" y2="30%" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" />
-                          <line x1="20%" y1="50%" x2="40%" y2="70%" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" />
-                          <line x1="40%" y1="30%" x2="60%" y2="50%" stroke="#a855f7" strokeWidth="1" strokeDasharray="4 4" />
-                          
-                          {/* Nodes with glow */}
-                          <circle cx="20%" cy="50%" r="6" fill="#a855f7" className="animate-pulse" />
-                          <circle cx="40%" cy="30%" r="6" fill="#a855f7" />
-                          <circle cx="40%" cy="70%" r="6" fill="#a855f7" />
-                          
-                          {/* Warning Node */}
-                          <circle cx="60%" cy="50%" r="6" fill="#ef4444" className="animate-ping opacity-75" />
-                          <circle cx="60%" cy="50%" r="4" fill="#ef4444" />
-                        </svg>
-                     </div>
-    
-                     <div className="absolute bottom-6 right-6 bg-black/60 backdrop-blur-md border border-white/10 p-5 rounded-2xl max-w-sm shadow-2xl">
-                        <div className="flex items-start gap-4">
-                          <div className="p-2 bg-orange-500/20 rounded-xl border border-orange-500/20 shadow-[0_0_15px_rgba(249,115,22,0.2)]">
-                            <AlertTriangle className="w-6 h-6 text-orange-500" />
-                          </div>
-                          <div>
-                            <div className="text-sm font-bold text-white mb-1">Collapse Risk Detected</div>
-                            <p className="text-xs text-zinc-300 leading-relaxed font-medium">
-                              Right flank connectivity dropped below threshold (0.32). <br/>
-                              <span className="text-orange-400">Recommendation: Invert FB to restore network links.</span>
-                            </p>
-                          </div>
-                        </div>
-                     </div>
-                  </div>
-                </div>
-              </>
-            ) : (
-              // --- UPCOMING / MY FIXTURES VIEW (Fan View) ---
-              <div className="flex-1 p-8 flex flex-col relative z-10">
-                <div className="flex justify-between items-center mb-6">
-                   <div className="flex items-center gap-4">
-                      <div className="relative group/dropdown">
-                        <button className="flex items-center gap-2 text-2xl font-bold text-white tracking-tight drop-shadow-lg hover:text-zinc-200 transition-colors">
-                           {selectedTeam} <ChevronDown className="w-5 h-5 text-zinc-500" />
-                        </button>
-                        {/* Dropdown for teams */}
-                        <div className="absolute top-full left-0 mt-2 w-48 bg-[#18181b] border border-white/10 rounded-xl shadow-2xl overflow-hidden hidden group-hover/dropdown:block z-50">
-                          {myTeams.map(team => (
-                            <button 
-                              key={team}
-                              onClick={() => setSelectedTeam(team)}
-                              className="w-full text-left px-4 py-3 text-sm text-zinc-300 hover:bg-white/5 hover:text-white transition-colors"
-                            >
-                              {team}
-                            </button>
-                          ))}
-                          <div className="border-t border-white/5 p-2">
-                             <button className="w-full text-center text-xs font-bold text-purple-400 py-1 hover:text-purple-300">+ Add Team</button>
-                          </div>
-                        </div>
-                      </div>
-                      <p className="text-sm text-zinc-500 font-medium border-l border-white/10 pl-4">Match Center</p>
-                   </div>
-                   
-                   <div className="flex gap-2">
-                      <button className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-zinc-300 text-xs font-bold hover:bg-white/10">
-                         Results
-                      </button>
-                      <button className="px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold flex items-center gap-2">
-                        <Calendar className="w-3.5 h-3.5" />
-                        Fixtures
-                      </button>
-                   </div>
-                </div>
-
-                {/* Featured Match Card */}
-                <div className="flex-1 bg-gradient-to-r from-zinc-900/50 to-black/50 rounded-2xl border border-white/10 p-8 flex items-center justify-between relative overflow-hidden mb-6 group hover:border-white/20 transition-all">
-                   {/* Background Pattern */}
-                   <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
-                   
-                   {/* Home Team */}
-                   <div className="flex flex-col items-center gap-4 relative z-10 w-1/3">
-                      <div className="w-20 h-20 bg-gradient-to-br from-blue-900 to-indigo-900 rounded-2xl flex items-center justify-center border border-white/10 shadow-[0_0_30px_rgba(59,130,246,0.2)] group-hover:scale-105 transition-transform">
-                         <Shield className="w-10 h-10 text-white" />
-                      </div>
-                      <div className="text-center">
-                         <h3 className="text-xl font-bold text-white">{upcomingMatches[0].home}</h3>
-                         <span className="text-xs text-zinc-500 font-mono tracking-wider">HOME</span>
-                      </div>
-                   </div>
-
-                   {/* VS / Info */}
-                   <div className="flex flex-col items-center justify-center gap-2 relative z-10 w-1/3">
-                      <div className="text-sm font-bold text-white bg-white/10 px-4 py-1 rounded-full border border-white/10 backdrop-blur-md">
-                        {upcomingMatches[0].time}
-                      </div>
-                      <span className="text-xs text-zinc-500 uppercase tracking-wider">{upcomingMatches[0].competition}</span>
-                      <button className="mt-4 px-6 py-2 bg-white text-black text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-zinc-200 transition-colors shadow-lg">
-                        Pre-Match
-                      </button>
-                   </div>
-
-                   {/* Away Team */}
-                   <div className="flex flex-col items-center gap-4 relative z-10 w-1/3">
-                      <div className="w-20 h-20 bg-gradient-to-br from-red-900 to-rose-900 rounded-2xl flex items-center justify-center border border-white/10 shadow-[0_0_30px_rgba(225,29,72,0.2)] group-hover:scale-105 transition-transform">
-                         <Shield className="w-10 h-10 text-white" />
-                      </div>
-                      <div className="text-center">
-                         <h3 className="text-xl font-bold text-white">{upcomingMatches[0].away}</h3>
-                         <span className="text-xs text-zinc-500 font-mono tracking-wider">AWAY</span>
-                      </div>
-                   </div>
-                </div>
-
-                {/* Match Actions Grid */}
-                <div className="grid grid-cols-2 gap-4 mt-auto">
-                   <div className="p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group flex items-start gap-3">
-                      <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400 group-hover:text-white transition-colors">
-                         <PlayCircle className="w-5 h-5" />
-                      </div>
-                      <div>
-                         <h4 className="text-sm font-bold text-white">Simulate Match</h4>
-                         <p className="text-xs text-zinc-500 mt-1">Run 1000 AI simulations based on predicted lineups.</p>
-                      </div>
-                   </div>
-                   <div className="p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group flex items-start gap-3">
-                      <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 group-hover:text-white transition-colors">
-                         <Activity className="w-5 h-5" />
-                      </div>
-                      <div>
-                         <h4 className="text-sm font-bold text-white">Advanced Analytics</h4>
-                         <p className="text-xs text-zinc-500 mt-1">Deep dive into opponent tactical weaknesses.</p>
-                      </div>
-                   </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Live Metrics Column */}
-        <div className="col-span-12 lg:col-span-4 space-y-8">
-          <div className="bg-black/40 backdrop-blur-2xl rounded-[32px] border border-white/5 p-8 shadow-xl relative overflow-hidden h-full flex flex-col">
-             <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 blur-[50px] rounded-full pointer-events-none" />
-             
-             {hasActiveMatch ? (
-                <>
-                  <div className="text-xs font-bold text-zinc-500 mb-6 uppercase tracking-[0.15em] flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-zinc-600" />
-                    Real-Time Metrics
-                  </div>
-                  
-                  <div className="space-y-8 flex-1">
-                    <div className="group">
-                      <div className="flex justify-between items-end mb-3">
-                        <span className="text-zinc-300 font-medium text-sm">Network Health</span>
-                        <span className="text-3xl font-bold text-white tracking-tight group-hover:text-purple-400 transition-colors">68%</span>
-                      </div>
-                      <div className="h-2.5 bg-white/5 rounded-full overflow-hidden p-[1px]">
-                        <div className="h-full bg-gradient-to-r from-purple-600 to-blue-600 w-[68%] rounded-full shadow-[0_0_10px_rgba(147,51,234,0.5)] relative">
-                           <div className="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite] skew-x-12" />
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs text-red-400 mt-2 font-medium">
-                        <TrendingDown className="w-3.5 h-3.5" />
-                        <span>-12% vs 1st Half</span>
-                      </div>
-                    </div>
-                  </div>
-                </>
-             ) : (
-                // Fan Zone Side Panel
-                <>
-                  <div className="text-xs font-bold text-zinc-500 mb-6 uppercase tracking-[0.15em] flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-zinc-600" />
-                    Community Pulse
-                  </div>
-
-                  <div className="space-y-4 flex-1">
-                     <div className="p-5 bg-white/[0.03] rounded-2xl border border-white/5 hover:bg-white/[0.06] transition-colors cursor-pointer group">
-                        <div className="flex items-center gap-3 mb-2">
-                           <div className="p-2 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-lg text-purple-400">
-                              <Download className="w-4 h-4" />
-                           </div>
-                           <span className="text-sm font-bold text-white">Most Downloaded</span>
-                        </div>
-                        <p className="text-xs text-zinc-500 leading-relaxed line-clamp-2">"Pep's 3-2-2-3 Evolution" is trending with 5k+ downloads this week.</p>
-                     </div>
-                     
-                     <div className="p-5 bg-white/[0.03] rounded-2xl border border-white/5 hover:bg-white/[0.06] transition-colors cursor-pointer group">
-                        <div className="flex items-center gap-3 mb-2">
-                           <div className="p-2 bg-gradient-to-br from-green-500/20 to-teal-500/20 rounded-lg text-green-400">
-                              <TrendingUp className="w-4 h-4" />
-                           </div>
-                           <span className="text-sm font-bold text-white">Rising Stars</span>
-                        </div>
-                        <p className="text-xs text-zinc-500 leading-relaxed line-clamp-2">User @Analyst_Mike gained 400 followers after his latest Defensive Block model.</p>
-                     </div>
-                  </div>
-
-                  <div className="mt-auto pt-6 border-t border-white/5">
-                     <div className="flex items-center justify-between mb-3">
-                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Global Ranking</span>
-                        <span className="text-xs text-purple-400 hover:text-white cursor-pointer transition-colors">View All</span>
-                     </div>
-                     <div className="space-y-2">
-                        {rankings.map((user, idx) => (
-                           <div key={user.rank} className="bg-gradient-to-r from-purple-900/10 to-blue-900/10 border border-white/5 hover:border-purple-500/30 rounded-lg px-3 py-2 flex items-center justify-between group transition-all">
-                              <div className="flex items-center gap-2">
-                                 <div className="w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold bg-white/5 border border-white/10 text-zinc-500 shadow-sm">
-                                    {user.rank}
-                                 </div>
-                                 <div className="text-[11px] font-bold text-white group-hover:text-purple-400 transition-colors">{user.name}</div>
-                              </div>
-                              <div className="text-[10px] text-zinc-500 font-mono">{user.score}</div>
-                           </div>
-                        ))}
-                     </div>
-                  </div>
-                </>
-             )}
-          </div>
-        </div>
-      </div>
-
-      {/* Discovery Section - The "Hub" part */}
-      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div>
-                  <h2 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
-                      <Sparkles className="w-6 h-6 text-purple-500" />
-                      Discover Community Work
-                  </h2>
-                  <p className="text-zinc-400 text-sm mt-2 max-w-2xl">
-                      Explore thousands of community-created tactics, models, widgets, and formations. Clone, adapt, and improve.
-                  </p>
-              </div>
-
-              {/* Category Filter Tabs */}
-              <div className="bg-black/40 backdrop-blur-xl border border-white/10 p-1 rounded-xl flex gap-1 overflow-x-auto no-scrollbar">
-                  {categories.map((cat) => (
-                      <button
-                          key={cat.id}
-                          onClick={() => setActiveCategory(cat.id as Category)}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
-                              activeCategory === cat.id 
-                                  ? 'bg-white text-black shadow-lg' 
-                                  : 'text-zinc-500 hover:text-white hover:bg-white/5'
-                          }`}
-                      >
-                          <cat.icon className="w-3.5 h-3.5" />
-                          {cat.label}
-                      </button>
-                  ))}
-              </div>
-          </div>
-
-          {/* Artifacts Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredArtifacts.map((item) => (
-                  <div key={item.id} className="group bg-[#09090b] border border-white/5 rounded-[24px] overflow-hidden hover:border-purple-500/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] hover:-translate-y-1">
-                      {/* Image Area */}
-                      <div className="h-48 w-full relative overflow-hidden">
-                          <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-110" style={{ background: item.image }} />
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-transparent to-transparent opacity-90" />
-                          
-                          <div className="absolute top-4 left-4 px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-lg text-[10px] font-bold text-white uppercase tracking-wider border border-white/10 flex items-center gap-2">
-                              <item.icon className="w-3 h-3 text-purple-400" />
-                              {item.type}
-                          </div>
-
-                          <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 group-hover:translate-x-0 duration-300">
-                               <button className="p-2 bg-white text-black rounded-full hover:scale-110 transition-transform shadow-lg">
-                                   <Download className="w-4 h-4" />
-                               </button>
-                          </div>
-                      </div>
-
-                      {/* Content Area */}
-                      <div className="p-6 pt-2">
-                          <h3 className="text-lg font-bold text-white mb-2 group-hover:text-purple-400 transition-colors leading-snug">{item.title}</h3>
-                          
-                          <div className="flex items-center gap-3 text-xs text-zinc-400 mb-5 font-medium border-b border-white/5 pb-4">
-                              <span className="flex items-center gap-1.5 text-zinc-300">
-                                  <div className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-[8px] text-white font-bold">
-                                      {item.author[0]}
-                                  </div>
-                                  {item.author}
-                              </span>
-                              <span className="w-1 h-1 rounded-full bg-zinc-700" />
-                              <span className="flex items-center gap-1.5">
-                                  <Download className="w-3.5 h-3.5" /> {item.downloads}
-                              </span>
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                              <div className="flex gap-2">
-                                  {item.tags.map(tag => (
-                                      <span key={tag} className="text-[10px] px-2.5 py-1 bg-white/5 border border-white/5 text-zinc-400 font-semibold rounded-md group-hover:border-white/10 group-hover:text-zinc-300 transition-colors">
-                                          {tag}
-                                      </span>
-                                  ))}
-                              </div>
-                              <div className="flex items-center gap-1 text-xs text-yellow-500 font-bold">
-                                  <Star className="w-3.5 h-3.5 fill-yellow-500" />
-                                  {item.rating}
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-              ))}
-          </div>
-
-          {/* AI Co-Pilot Prompt */}
-          <div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-[24px] border border-white/10 p-1 flex items-center justify-between backdrop-blur-sm group hover:border-white/20 transition-all">
-              <div className="flex items-center gap-6 px-6 py-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                      <Sparkles className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                      <h3 className="text-lg font-bold text-white">Can't find what you need?</h3>
-                      <p className="text-sm text-zinc-400">Ask Pelada to generate a custom tactic, model, or widget for you.</p>
-                  </div>
-              </div>
-              <button 
-                onClick={onOpenAgent}
-                className="mr-6 px-6 py-3 bg-white text-black font-bold text-sm rounded-xl hover:bg-zinc-200 transition-colors flex items-center gap-2"
-              >
-                  Open Co-Pilot <ArrowRight className="w-4 h-4" />
-              </button>
-          </div>
-      </div>
     </div>
   );
 }

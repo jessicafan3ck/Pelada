@@ -62,7 +62,7 @@ function AppShell() {
 
   const renderView = () => {
     switch (currentView) {
-      case 'dashboard':   return <Dashboard onOpenAgent={() => setCurrentView('copilot')} />;
+      case 'dashboard':   return <Dashboard onOpenAgent={() => setCurrentView('copilot')} onNavigate={v => setCurrentView(v as ViewType)} />;
       case 'copilot':     return <PeladaAgent onNavigate={setCurrentView} currentView={currentView} isOpen={true} onOpenChange={() => {}} fullPage />;
       case 'lineup':      return <LineupView />;
       case 'similarity':   return <PlayerSimilarity />;
