@@ -405,7 +405,7 @@ export default function GoatBuilder() {
                 {generated.similar.map(({ player, pct }) => (
                   <div key={player.id} className="flex justify-between items-center mb-1">
                     <span className="text-xs text-zinc-300 font-semibold">{player.flag} {player.name}</span>
-                    <span className="text-xs font-black text-purple-400">{pct}%</span>
+                    <span className="text-xs font-black text-yellow-400">{pct}%</span>
                   </div>
                 ))}
               </div>

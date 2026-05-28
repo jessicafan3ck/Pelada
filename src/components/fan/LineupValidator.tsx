@@ -348,9 +348,9 @@ export default function LineupValidator() {
           <AnimatePresence>
             {activeSlot !== null && (
               <motion.div initial={{ opacity:0, y:-6 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }}
-                className="p-4 rounded-xl border border-purple-500/30 bg-purple-500/10">
+                className="p-4 rounded-xl border border-yellow-500/30 bg-yellow-500/10">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-bold text-purple-300">Assigning: <span className="text-white">{slots[activeSlot].role}</span></p>
+                  <p className="text-xs font-bold text-yellow-300">Assigning: <span className="text-white">{slots[activeSlot].role}</span></p>
                   <button onClick={() => setActiveSlot(null)} className="text-zinc-600 hover:text-white transition-colors bg-transparent border-none cursor-pointer"><X size={14}/></button>
                 </div>
                 <div className="relative mb-2">
@@ -404,7 +404,7 @@ export default function LineupValidator() {
                   <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-900">
                     <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-2">Ball Knowledge</p>
                     <div className="flex items-end gap-1.5">
-                      <span className="text-3xl font-black text-purple-400">{analysis.bk}</span>
+                      <span className="text-3xl font-black text-yellow-400">{analysis.bk}</span>
                       <span className="text-xs text-zinc-600 mb-1">th %ile</span>
                     </div>
                     <p className="text-[10px] text-zinc-600 mt-2">vs. historical manager selections</p>

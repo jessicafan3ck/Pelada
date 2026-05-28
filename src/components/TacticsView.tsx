@@ -44,7 +44,7 @@ export default function TacticsView() {
 
   const [availableBenchmarks] = useState([
     { id: 'intensity', name: 'Pressing Intensity', color: 'blue' },
-    { id: 'width', name: 'Effective Width', color: 'purple' },
+    { id: 'width', name: 'Effective Width', color: 'pink' },
     { id: 'xg', name: 'xG Potential', color: 'green' }
   ]);
   
@@ -135,7 +135,7 @@ export default function TacticsView() {
               <div className="flex justify-between items-end">
                   <div>
                       <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
-                          <Target className="w-8 h-8 text-purple-500" />
+                          <Target className="w-8 h-8 text-pink-500" />
                           Tactics Studio
                       </h1>
                       <p className="text-zinc-400 mt-2">Design, simulate, and share next-gen tactical systems.</p>
@@ -176,12 +176,12 @@ export default function TacticsView() {
                       {/* New Project Card */}
                       <button 
                           onClick={() => setView('editor')}
-                          className="group h-48 rounded-2xl border border-dashed border-white/20 hover:border-purple-500/50 hover:bg-purple-500/5 flex flex-col items-center justify-center gap-4 transition-all"
+                          className="group h-48 rounded-2xl border border-dashed border-white/20 hover:border-pink-500/50 hover:bg-pink-500/5 flex flex-col items-center justify-center gap-4 transition-all"
                       >
-                          <div className="w-12 h-12 rounded-full bg-white/5 group-hover:bg-purple-500/20 flex items-center justify-center transition-colors">
-                              <Plus className="w-6 h-6 text-zinc-500 group-hover:text-purple-400" />
+                          <div className="w-12 h-12 rounded-full bg-white/5 group-hover:bg-pink-500/20 flex items-center justify-center transition-colors">
+                              <Plus className="w-6 h-6 text-zinc-500 group-hover:text-pink-400" />
                           </div>
-                          <span className="text-sm font-bold text-zinc-500 group-hover:text-purple-400 uppercase tracking-wider">Start Blank Canvas</span>
+                          <span className="text-sm font-bold text-zinc-500 group-hover:text-pink-400 uppercase tracking-wider">Start Blank Canvas</span>
                       </button>
 
                       {myTactics.map(tactic => (
@@ -217,17 +217,17 @@ export default function TacticsView() {
               <div>
                   <div className="flex items-center justify-between mb-4">
                       <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                          <Globe className="w-5 h-5 text-purple-400" />
+                          <Globe className="w-5 h-5 text-pink-400" />
                           Community Inspiration
                       </h2>
-                      <button className="text-xs text-purple-400 hover:text-white font-bold uppercase tracking-wider">View All</button>
+                      <button className="text-xs text-pink-400 hover:text-white font-bold uppercase tracking-wider">View All</button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {communityTactics.map(tactic => (
                           <div 
                               key={tactic.id} 
                               onClick={() => setView('editor')}
-                              className="group bg-[#0a0a0a] border border-white/5 rounded-2xl overflow-hidden hover:border-purple-500/30 transition-all hover:shadow-lg cursor-pointer"
+                              className="group bg-[#0a0a0a] border border-white/5 rounded-2xl overflow-hidden hover:border-pink-500/30 transition-all hover:shadow-lg cursor-pointer"
                           >
                               <div className="h-32 w-full relative overflow-hidden">
                                   <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-105" style={{ background: tactic.image }} />
@@ -243,7 +243,7 @@ export default function TacticsView() {
                                   </div>
                               </div>
                               <div className="p-5">
-                                  <h3 className="text-base font-bold text-white mb-1 group-hover:text-purple-400 transition-colors">{tactic.title}</h3>
+                                  <h3 className="text-base font-bold text-white mb-1 group-hover:text-pink-400 transition-colors">{tactic.title}</h3>
                                   <div className="flex items-center justify-between mt-4 text-xs text-zinc-500">
                                       <span className="flex items-center gap-1">
                                           <Users className="w-3 h-3" /> {tactic.author}
@@ -299,7 +299,7 @@ export default function TacticsView() {
               onClick={() => setMode('play')}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                 mode === 'play' 
-                  ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(147,51,234,0.5)] border border-purple-500/50' 
+                  ? 'bg-pink-600 text-white shadow-[0_0_15px_rgba(244,114,182,0.5)] border border-pink-500/50' 
                   : 'text-zinc-500 hover:text-white hover:bg-white/5'
               }`}
             >
@@ -422,7 +422,7 @@ export default function TacticsView() {
         {/* Pitch Visual */}
         <div className="flex-1 relative bg-[#050505] overflow-hidden group">
           {/* Animated Background Mesh */}
-          <div className="absolute inset-0 bg-gradient-to-b from-purple-900/10 to-blue-900/10 opacity-50" />
+          <div className="absolute inset-0 bg-gradient-to-b from-pink-900/10 to-blue-900/10 opacity-50" />
           
           {/* Pitch Grid Pattern */}
           <div className="absolute inset-0 opacity-20" 
@@ -498,18 +498,18 @@ export default function TacticsView() {
           {mode === 'describe' ? (
             <div className="flex-1 flex flex-col">
               <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                <div className="p-2 bg-purple-500/20 rounded-xl border border-purple-500/20">
-                   <Zap className="w-5 h-5 text-purple-400" />
+                <div className="p-2 bg-pink-500/20 rounded-xl border border-pink-500/20">
+                   <Zap className="w-5 h-5 text-pink-400" />
                 </div>
                 Tactical AI
               </h3>
               <div className="flex-1 relative mb-6 group">
-                <div className="absolute inset-0 bg-gradient-to-b from-purple-500/5 to-blue-500/5 rounded-2xl pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-b from-pink-500/5 to-blue-500/5 rounded-2xl pointer-events-none" />
                 <textarea
                   value={tacticalDescription}
                   onChange={(e) => setTacticalDescription(e.target.value)}
                   placeholder={`Describe a tactical sequence for ${homeTeam} against ${awayTeam}...`}
-                  className="w-full h-full bg-black/20 border border-white/10 rounded-2xl p-6 text-sm text-white resize-none focus:outline-none focus:border-purple-500/50 focus:bg-black/40 transition-all placeholder:text-zinc-600 leading-relaxed shadow-inner"
+                  className="w-full h-full bg-black/20 border border-white/10 rounded-2xl p-6 text-sm text-white resize-none focus:outline-none focus:border-pink-500/50 focus:bg-black/40 transition-all placeholder:text-zinc-600 leading-relaxed shadow-inner"
                 />
                 <button 
                   onClick={() => setIsRecording(!isRecording)}
@@ -518,7 +518,7 @@ export default function TacticsView() {
                   <Mic className="w-5 h-5" />
                 </button>
               </div>
-              <button className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl text-white font-bold uppercase tracking-wider text-xs hover:shadow-[0_0_30px_rgba(147,51,234,0.4)] transition-all transform active:scale-95 border border-white/10">
+              <button className="w-full py-4 bg-gradient-to-r from-pink-600 to-blue-600 rounded-2xl text-white font-bold uppercase tracking-wider text-xs hover:shadow-[0_0_30px_rgba(244,114,182,0.4)] transition-all transform active:scale-95 border border-white/10">
                 Generate Tactic
               </button>
             </div>
@@ -545,7 +545,7 @@ export default function TacticsView() {
                            className="w-full text-left px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-sm text-zinc-300 hover:text-white transition-colors flex items-center justify-between group"
                          >
                            {ab.name}
-                           <span className="opacity-0 group-hover:opacity-100 text-purple-400 text-xs font-bold">+ Add</span>
+                           <span className="opacity-0 group-hover:opacity-100 text-pink-400 text-xs font-bold">+ Add</span>
                          </button>
                        ))}
                        {availableBenchmarks.filter(ab => !benchmarks.find(b => b.id === ab.id)).length === 0 && (
@@ -569,7 +569,7 @@ export default function TacticsView() {
                             b.color === 'yellow' ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]' :
                             b.color === 'red' ? 'text-red-400 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]' :
                             b.color === 'blue' ? 'text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]' :
-                            'text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]'
+                            'text-pink-400 drop-shadow-[0_0_8px_rgba(244,114,182,0.5)]'
                          }`}>
                            {b.isInverse ? (b.score > 80 ? 'High' : b.score > 50 ? 'Med' : 'Low') : `${b.score}/${b.max}`}
                          </span>
@@ -581,7 +581,7 @@ export default function TacticsView() {
                               b.color === 'yellow' ? 'bg-yellow-400 text-yellow-400' :
                               b.color === 'red' ? 'bg-red-500 text-red-500' :
                               b.color === 'blue' ? 'bg-blue-500 text-blue-500' :
-                              'bg-purple-500 text-purple-500'
+                              'bg-pink-500 text-pink-500'
                            }`} 
                            style={{ width: `${b.score}%` }}
                          />
@@ -594,12 +594,12 @@ export default function TacticsView() {
                <div className="mt-auto space-y-4">
                  {/* Generate Summary Button */}
                  <button className="w-full py-4 bg-white text-black rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-zinc-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)] flex items-center justify-center gap-2 group">
-                    <Zap className="w-4 h-4 text-purple-600 group-hover:scale-110 transition-transform" />
+                    <Zap className="w-4 h-4 text-pink-600 group-hover:scale-110 transition-transform" />
                     Generate Tactic Summary
                  </button>
 
                  {/* Better Leaderboard Card */}
-                 <div className="bg-gradient-to-r from-purple-900/10 to-blue-900/10 border border-white/10 rounded-2xl p-4 relative overflow-hidden group hover:border-purple-500/30 transition-all flex items-center justify-between">
+                 <div className="bg-gradient-to-r from-pink-900/10 to-blue-900/10 border border-white/10 rounded-2xl p-4 relative overflow-hidden group hover:border-pink-500/30 transition-all flex items-center justify-between">
                     <div className="flex items-center gap-3">
                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 flex items-center justify-center border border-yellow-500/30">
                           <Trophy className="w-5 h-5 text-yellow-500" />
@@ -611,7 +611,7 @@ export default function TacticsView() {
                     </div>
                     <div className="text-right">
                        <div className="text-[10px] text-zinc-500 mb-1">Top Tier</div>
-                       <div className="text-xs font-bold text-purple-400">Possession</div>
+                       <div className="text-xs font-bold text-pink-400">Possession</div>
                     </div>
                  </div>
                </div>
@@ -627,7 +627,7 @@ export default function TacticsView() {
           </h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 hover:bg-white/5 rounded-xl cursor-pointer transition-all border border-transparent hover:border-white/5 group">
-              <span className="text-sm text-white font-medium group-hover:text-purple-400 transition-colors">v2.4 - Width Adjustment</span>
+              <span className="text-sm text-white font-medium group-hover:text-pink-400 transition-colors">v2.4 - Width Adjustment</span>
               <span className="text-[10px] text-zinc-500 bg-white/5 px-2 py-1 rounded-md">2m ago</span>
             </div>
             <div className="flex items-center justify-between p-3 hover:bg-white/5 rounded-xl cursor-pointer transition-all border border-transparent hover:border-white/5 group">

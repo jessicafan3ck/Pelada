@@ -118,8 +118,8 @@ export default function MatchContextBar() {
                 padding: '10px 16px',
                 fontSize: '14px',
                 textAlign: 'left',
-                backgroundColor: activeMatchId === m.match_id ? 'rgba(139,92,246,0.18)' : DROPDOWN_BG,
-                color: activeMatchId === m.match_id ? '#c4b5fd' : '#d4d4d8',
+                backgroundColor: activeMatchId === m.match_id ? 'rgba(56,189,248,0.18)' : DROPDOWN_BG,
+                color: activeMatchId === m.match_id ? '#bae6fd' : '#d4d4d8',
                 border: 'none',
                 cursor: 'pointer',
                 transition: 'background-color 0.15s',
@@ -144,9 +144,9 @@ export default function MatchContextBar() {
         <button
           ref={buttonRef}
           onClick={openDropdown}
-          className="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/8 border border-white/10 hover:border-purple-500/40 rounded-xl text-sm text-white transition-all max-w-[300px]"
+          className="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/8 border border-white/10 hover:border-sky-500/40 rounded-xl text-sm text-white transition-all max-w-[300px]"
         >
-          <Swords className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+          <Swords className="w-3.5 h-3.5 text-sky-400 shrink-0" />
           {activeMatch ? (
             <span className="truncate font-medium">
               {activeMatch.home_team} <span className="text-zinc-500 text-xs">vs</span> {activeMatch.away_team}
@@ -155,7 +155,7 @@ export default function MatchContextBar() {
             <span className="text-zinc-500">Select match…</span>
           )}
           {activeMatch && (
-            <span className="text-[10px] text-purple-400 bg-purple-500/15 px-1.5 py-0.5 rounded-md shrink-0 font-semibold">
+            <span className="text-[10px] text-sky-400 bg-sky-500/15 px-1.5 py-0.5 rounded-md shrink-0 font-semibold">
               {stageShort(activeMatch.stage)}
             </span>
           )}
@@ -184,7 +184,7 @@ export default function MatchContextBar() {
               onClick={() => setActiveTeam(activeTeam === team ? null : team)}
               className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all border max-w-[100px] truncate ${
                 activeTeam === team
-                  ? 'bg-purple-500/20 border-purple-500/40 text-purple-200'
+                  ? 'bg-sky-500/20 border-sky-500/40 text-sky-200'
                   : 'bg-transparent border-white/8 text-zinc-500 hover:text-zinc-300'
               }`}
             >

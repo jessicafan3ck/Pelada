@@ -105,7 +105,7 @@ const SEED_WIDGETS: SavedWidget[] = [
         <div style={{ position: 'absolute', left: '22%', right: '22%', top: '48%', bottom: '10%', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 3, pointerEvents: 'none' }} />
         {POSITIONS.map(pos => (
           <div key={pos.id} onClick={() => setSelected(selected === pos.id ? null : pos.id)} style={{ position: 'absolute', left: pos.x+'%', top: pos.y+'%', transform: 'translate(-50%,-50%)', textAlign: 'center', cursor: 'pointer' }}>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: lineup[pos.id] ? 'rgba(168,85,247,0.3)' : 'rgba(255,255,255,0.06)', border: '2px solid '+(selected===pos.id?'#a855f7':lineup[pos.id]?'rgba(168,85,247,0.45)':'rgba(255,255,255,0.1)'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, boxShadow: selected===pos.id?'0 0 10px rgba(168,85,247,0.4)':'none', transition: 'all 0.15s' }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: lineup[pos.id] ? 'rgba(250,204,21,0.3)' : 'rgba(255,255,255,0.06)', border: '2px solid '+(selected===pos.id?'#a855f7':lineup[pos.id]?'rgba(250,204,21,0.45)':'rgba(255,255,255,0.1)'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, boxShadow: selected===pos.id?'0 0 10px rgba(250,204,21,0.4)':'none', transition: 'all 0.15s' }}>
               {lineup[pos.id] ? lineup[pos.id].slice(0,4) : pos.label}
             </div>
           </div>
@@ -114,7 +114,7 @@ const SEED_WIDGETS: SavedWidget[] = [
       {selected ? (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'center' }}>
           {PLAYERS.map(p => (
-            <button key={p} onClick={() => { setLineup(l => ({ ...l, [selected]: p })); setSelected(null); }} style={{ padding: '3px 8px', borderRadius: 14, background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.2)', color: '#d8b4fe', fontSize: 10, cursor: 'pointer', fontWeight: 600 }}>{p}</button>
+            <button key={p} onClick={() => { setLineup(l => ({ ...l, [selected]: p })); setSelected(null); }} style={{ padding: '3px 8px', borderRadius: 14, background: 'rgba(250,204,21,0.1)', border: '1px solid rgba(250,204,21,0.2)', color: '#d8b4fe', fontSize: 10, cursor: 'pointer', fontWeight: 600 }}>{p}</button>
           ))}
           <button onClick={() => { setLineup(l => { const n={...l}; delete n[selected]; return n; }); setSelected(null); }} style={{ padding: '3px 8px', borderRadius: 14, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#fca5a5', fontSize: 10, cursor: 'pointer' }}>Clear</button>
         </div>
@@ -215,8 +215,8 @@ function GeneratingPreview() {
                 className="flex-1 rounded-t"
                 style={{
                   height: `${h}%`,
-                  background: 'linear-gradient(to top, rgba(168,85,247,0.55), rgba(168,85,247,0.15))',
-                  boxShadow: '0 0 10px rgba(168,85,247,0.25)',
+                  background: 'linear-gradient(to top, rgba(250,204,21,0.55), rgba(250,204,21,0.15))',
+                  boxShadow: '0 0 10px rgba(250,204,21,0.25)',
                   transition: `height ${0.6 + i * 0.04}s cubic-bezier(0.34,1.56,0.64,1)`,
                 }}
               />
@@ -233,7 +233,7 @@ function GeneratingPreview() {
             {[0, 1, 2].map((i: number) => (
               <span
                 key={i}
-                className="w-1.5 h-1.5 rounded-full bg-purple-400/80"
+                className="w-1.5 h-1.5 rounded-full bg-yellow-400/80"
                 style={{ animation: `bounce 1.1s ease-in-out ${i * 0.18}s infinite` }}
               />
             ))}
@@ -290,7 +290,7 @@ const TEMPLATES = [
 
 const AI_SUGGESTIONS = [
   { icon: Activity,  color: 'bg-blue-500/20 text-blue-400',    label: 'Live Match Metrics',    sub: 'Real-time possession, xG, pass completion',  hint: 'Real-time live match metrics dashboard showing possession percentage, xG, and pass completion rate' },
-  { icon: BarChart3, color: 'bg-purple-500/20 text-purple-400', label: 'Historical Comparison', sub: 'Season vs Season, Player vs Player',          hint: 'Historical comparison chart showing season vs season or player vs player stat breakdown' },
+  { icon: BarChart3, color: 'bg-yellow-500/20 text-yellow-400', label: 'Historical Comparison', sub: 'Season vs Season, Player vs Player',          hint: 'Historical comparison chart showing season vs season or player vs player stat breakdown' },
 ];
 
 const EMBED_BASE = 'https://pelada-plum.vercel.app';
@@ -392,7 +392,7 @@ function DeployModal({ code, name, description, onClose }: {
         {/* Deploy targets */}
         <div className="grid grid-cols-4 gap-3">
           {[
-            { label: 'Website',     desc: 'Paste iframe anywhere',      color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20', Icon: Box,      onClick: undefined },
+            { label: 'Website',     desc: 'Paste iframe anywhere',      color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/20', Icon: Box,      onClick: undefined },
             { label: 'Notion',      desc: '/Embed → paste URL',         color: 'text-blue-400',   bg: 'bg-blue-500/10 border-blue-500/20',    Icon: Globe,    onClick: undefined },
             { label: 'TikTok Bio',  desc: 'Link-in-bio → URL',          color: 'text-pink-400',   bg: 'bg-pink-500/10 border-pink-500/20',    Icon: Share2,   onClick: undefined },
             { label: 'Download',    desc: 'Standalone HTML file',        color: 'text-green-400',  bg: 'bg-green-500/10 border-green-500/20',  Icon: Download, onClick: downloadHtml },
@@ -539,7 +539,7 @@ Respond ONLY with valid JSON, no other text: {"name": "...", "description": "...
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
-            <Box className="w-8 h-8 text-indigo-500" />
+            <Box className="w-8 h-8 text-yellow-500" />
             Widget Library
           </h1>
           <p className="text-zinc-400 mt-2">Browse, install, and create custom data visualizations.</p>
@@ -579,7 +579,7 @@ Respond ONLY with valid JSON, no other text: {"name": "...", "description": "...
             { icon: TrendingUp, label: 'Charts & Graphs', count: 124, color: 'text-blue-400',   bg: 'bg-blue-500/10',   border: 'border-blue-500/20' },
             { icon: LayoutGrid, label: 'Heatmaps',        count: 45,  color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/20' },
             { icon: Activity,   label: 'Live Metrics',    count: 89,  color: 'text-green-400',  bg: 'bg-green-500/10',  border: 'border-green-500/20' },
-            { icon: Layout,     label: 'Dashboards',      count: 32,  color: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/20' },
+            { icon: Layout,     label: 'Dashboards',      count: 32,  color: 'text-yellow-400', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20' },
           ].map((cat, i) => (
             <div key={i} className={`p-4 rounded-2xl border ${cat.border} ${cat.bg} hover:brightness-110 transition-all cursor-pointer group`}>
               <div className="flex items-center justify-between mb-2">
@@ -596,24 +596,24 @@ Respond ONLY with valid JSON, no other text: {"name": "...", "description": "...
       {savedWidgets.length > 0 && !searchQuery && (
         <div>
           <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <Lock className="w-5 h-5 text-purple-400" />
+            <Lock className="w-5 h-5 text-yellow-400" />
             Your Widgets
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {savedWidgets.map(w => {
               const Icon = typeIcon[w.type] ?? BarChart3;
               return (
-                <div key={w.id} className="group bg-[#09090b] border border-white/5 rounded-2xl overflow-hidden hover:border-purple-500/30 transition-all hover:shadow-[0_0_30px_rgba(139,92,246,0.15)] hover:-translate-y-1 flex flex-col">
-                  <div className="h-40 bg-gradient-to-br from-[#111] to-[#1a1a1a] relative flex items-center justify-center p-8 group-hover:from-purple-900/10 group-hover:to-indigo-900/10 transition-colors">
+                <div key={w.id} className="group bg-[#09090b] border border-white/5 rounded-2xl overflow-hidden hover:border-yellow-500/30 transition-all hover:shadow-[0_0_30px_rgba(250,204,21,0.15)] hover:-translate-y-1 flex flex-col">
+                  <div className="h-40 bg-gradient-to-br from-[#111] to-[#1a1a1a] relative flex items-center justify-center p-8 group-hover:from-yellow-900/10 group-hover:to-yellow-900/10 transition-colors">
                     <div className="w-full h-full bg-white/5 rounded-xl border border-white/5 relative overflow-hidden shadow-inner flex items-center justify-center">
-                      <Icon className="w-10 h-10 text-zinc-600 group-hover:text-purple-400 transition-colors" />
+                      <Icon className="w-10 h-10 text-zinc-600 group-hover:text-yellow-400 transition-colors" />
                     </div>
-                    <span className="absolute top-3 left-3 text-[10px] font-bold text-purple-400 bg-purple-900/40 border border-purple-800 px-2 py-0.5 rounded">Yours</span>
+                    <span className="absolute top-3 left-3 text-[10px] font-bold text-yellow-400 bg-yellow-900/40 border border-yellow-800 px-2 py-0.5 rounded">Yours</span>
                   </div>
                   <div className="p-5 flex-1 flex flex-col">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <h3 className="text-base font-bold text-white group-hover:text-purple-400 transition-colors">{w.name}</h3>
+                        <h3 className="text-base font-bold text-white group-hover:text-yellow-400 transition-colors">{w.name}</h3>
                         <span className="text-xs text-zinc-500">{w.author}</span>
                       </div>
                       <span className="text-[10px] font-bold text-zinc-400 bg-white/5 border border-white/5 px-2 py-1 rounded">{w.type}</span>
@@ -652,7 +652,7 @@ Respond ONLY with valid JSON, no other text: {"name": "...", "description": "...
       {/* Community Top Picks / Search Results */}
       <div>
         <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-          <Globe className="w-5 h-5 text-indigo-400" />
+          <Globe className="w-5 h-5 text-yellow-400" />
           {searchQuery ? `Results (${filtered.length})` : 'Community Top Picks'}
         </h2>
         {filtered.length === 0 ? (
@@ -674,15 +674,15 @@ Respond ONLY with valid JSON, no other text: {"name": "...", "description": "...
                     }
                     setViewMode('builder');
                   }}
-                  className="group bg-[#09090b] border border-white/5 rounded-2xl overflow-hidden hover:border-indigo-500/30 transition-all hover:shadow-[0_0_30px_rgba(99,102,241,0.15)] cursor-pointer hover:-translate-y-1 flex flex-col"
+                  className="group bg-[#09090b] border border-white/5 rounded-2xl overflow-hidden hover:border-yellow-500/30 transition-all hover:shadow-[0_0_30px_rgba(250,204,21,0.15)] cursor-pointer hover:-translate-y-1 flex flex-col"
                 >
-                  <div className="h-40 bg-gradient-to-br from-[#111] to-[#1a1a1a] relative flex items-center justify-center p-8 group-hover:from-indigo-900/10 group-hover:to-purple-900/10 transition-colors">
+                  <div className="h-40 bg-gradient-to-br from-[#111] to-[#1a1a1a] relative flex items-center justify-center p-8 group-hover:from-yellow-900/10 group-hover:to-yellow-900/10 transition-colors">
                     <div className="w-full h-full bg-white/5 rounded-xl border border-white/5 relative overflow-hidden shadow-inner flex items-center justify-center">
-                      <Icon className="w-10 h-10 text-zinc-600 group-hover:text-indigo-400 transition-colors" />
+                      <Icon className="w-10 h-10 text-zinc-600 group-hover:text-yellow-400 transition-colors" />
                     </div>
                     <div className="absolute top-3 right-3 flex gap-1.5">
                       {w.code && (
-                        <span className="px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[9px] font-bold uppercase tracking-wider rounded">
+                        <span className="px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-[9px] font-bold uppercase tracking-wider rounded">
                           Remix
                         </span>
                       )}
@@ -694,7 +694,7 @@ Respond ONLY with valid JSON, no other text: {"name": "...", "description": "...
                   <div className="p-5 flex-1 flex flex-col">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <h3 className="text-base font-bold text-white group-hover:text-indigo-400 transition-colors">{w.name}</h3>
+                        <h3 className="text-base font-bold text-white group-hover:text-yellow-400 transition-colors">{w.name}</h3>
                         <span className="text-xs text-zinc-500">{w.author}</span>
                       </div>
                       <div className="flex items-center gap-1 bg-white/5 px-2 py-1 rounded text-[10px] font-bold text-zinc-400 border border-white/5">{w.type}</div>
@@ -722,13 +722,13 @@ Respond ONLY with valid JSON, no other text: {"name": "...", "description": "...
             {!searchQuery && (
               <div
                 onClick={() => setViewMode('builder')}
-                className="group bg-white/[0.02] border border-dashed border-white/10 rounded-2xl overflow-hidden hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all cursor-pointer flex flex-col items-center justify-center gap-4 min-h-[300px]"
+                className="group bg-white/[0.02] border border-dashed border-white/10 rounded-2xl overflow-hidden hover:border-yellow-500/50 hover:bg-yellow-500/5 transition-all cursor-pointer flex flex-col items-center justify-center gap-4 min-h-[300px]"
               >
-                <div className="w-16 h-16 rounded-full bg-white/5 group-hover:bg-indigo-500/20 flex items-center justify-center transition-colors">
-                  <Plus className="w-8 h-8 text-zinc-500 group-hover:text-indigo-400" />
+                <div className="w-16 h-16 rounded-full bg-white/5 group-hover:bg-yellow-500/20 flex items-center justify-center transition-colors">
+                  <Plus className="w-8 h-8 text-zinc-500 group-hover:text-yellow-400" />
                 </div>
                 <div className="text-center">
-                  <h3 className="text-lg font-bold text-zinc-400 group-hover:text-indigo-400 transition-colors">Create Custom Widget</h3>
+                  <h3 className="text-lg font-bold text-zinc-400 group-hover:text-yellow-400 transition-colors">Create Custom Widget</h3>
                   <p className="text-xs text-zinc-500 mt-1">Use AI or Code</p>
                 </div>
               </div>
@@ -762,7 +762,7 @@ Respond ONLY with valid JSON, no other text: {"name": "...", "description": "...
                 onClick={() => handleGenerate(t.hint)}
                 className="w-full flex items-center gap-3 p-4 rounded-2xl hover:bg-white/[0.05] text-left transition-all border border-transparent hover:border-white/5 group"
               >
-                <div className="p-2 bg-white/5 rounded-lg text-zinc-400 group-hover:text-purple-400 transition-colors">
+                <div className="p-2 bg-white/5 rounded-lg text-zinc-400 group-hover:text-yellow-400 transition-colors">
                   <t.icon className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col">
@@ -811,7 +811,7 @@ Respond ONLY with valid JSON, no other text: {"name": "...", "description": "...
             <button
               onClick={handlePublish}
               disabled={!generatedCode || !widgetName.trim() || published}
-              className="px-5 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-sm font-bold text-white transition-all shadow-lg hover:shadow-purple-600/25 flex items-center gap-2"
+              className="px-5 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-sm font-bold text-white transition-all shadow-lg hover:shadow-yellow-600/25 flex items-center gap-2"
             >
               {published ? <><Check className="w-4 h-4" /> Saved!</> : <><Share2 className="w-4 h-4" /> Publish</>}
             </button>
@@ -835,18 +835,18 @@ Respond ONLY with valid JSON, no other text: {"name": "...", "description": "...
                   Describe your widget
                 </label>
                 <div className="relative group">
-                  <div className="absolute inset-0 bg-gradient-to-b from-purple-500/5 to-transparent rounded-2xl pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-yellow-500/5 to-transparent rounded-2xl pointer-events-none" />
                   <textarea
                     value={naturalLanguageInput}
                     onChange={e => setNaturalLanguageInput(e.target.value)}
                     placeholder="E.g., 'Create a timeline comparing network health between Spain and Japan, highlighting collapse risk moments...'"
-                    className="w-full h-40 bg-black/20 border border-white/10 rounded-2xl p-6 text-sm text-white resize-none focus:outline-none focus:border-purple-500/50 focus:bg-black/40 transition-all placeholder:text-zinc-600 leading-relaxed shadow-inner"
+                    className="w-full h-40 bg-black/20 border border-white/10 rounded-2xl p-6 text-sm text-white resize-none focus:outline-none focus:border-yellow-500/50 focus:bg-black/40 transition-all placeholder:text-zinc-600 leading-relaxed shadow-inner"
                   />
                   <div className="absolute bottom-4 right-4 flex gap-2">
                     <button
                       onClick={() => handleGenerate()}
                       disabled={generating}
-                      className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 rounded-xl text-xs font-bold text-white flex items-center gap-2 transition-all shadow-lg hover:scale-105 active:scale-95"
+                      className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 rounded-xl text-xs font-bold text-white flex items-center gap-2 transition-all shadow-lg hover:scale-105 active:scale-95"
                     >
                       {generating ? <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Sparkles className="w-3 h-3" />}
                       Generate
@@ -865,7 +865,7 @@ Respond ONLY with valid JSON, no other text: {"name": "...", "description": "...
                     value={widgetName}
                     onChange={e => setWidgetName(e.target.value)}
                     placeholder="Give it a name to publish…"
-                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 transition-colors"
+                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-yellow-500/50 transition-colors"
                   />
                   {widgetDesc && <p className="text-xs text-zinc-500 mt-2 leading-relaxed">{widgetDesc}</p>}
                   {widgetTags.length > 0 && (
@@ -905,7 +905,7 @@ Respond ONLY with valid JSON, no other text: {"name": "...", "description": "...
 
           {/* Preview */}
           <div className="w-full md:w-1/2 bg-black/10 flex flex-col relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-900/5 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-yellow-900/5 to-transparent pointer-events-none" />
             <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/[0.02] backdrop-blur-sm relative z-10">
               <span className="text-xs font-bold text-zinc-400 flex items-center gap-2 uppercase tracking-wider">
                 <Eye className="w-3 h-3" /> Preview
@@ -939,7 +939,7 @@ Respond ONLY with valid JSON, no other text: {"name": "...", "description": "...
               ) : (
                 <div className="w-full h-64 bg-black/60 rounded-2xl border border-white/10 flex flex-col items-center justify-center gap-4 text-zinc-500">
                   <div className="p-4 bg-white/5 rounded-full border border-white/5">
-                    <Sparkles className="w-8 h-8 opacity-40 text-purple-400" />
+                    <Sparkles className="w-8 h-8 opacity-40 text-yellow-400" />
                   </div>
                   <span className="text-sm font-medium">Describe a widget and click Generate</span>
                   <svg className="absolute inset-0 w-full h-full p-8 opacity-10 pointer-events-none" style={{ position: 'absolute' }}>

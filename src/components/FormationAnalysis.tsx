@@ -265,8 +265,8 @@ export default function FormationAnalysis() {
            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-50" />
            
            <div className="flex items-center gap-4 mb-8">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500/10 to-blue-500/10 flex items-center justify-center border border-white/5 shadow-inner">
-                 <GitMerge className="w-7 h-7 text-transparent bg-clip-text bg-gradient-to-br from-purple-400 to-blue-400" style={{ fill: 'currentColor' }} />
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500/10 to-blue-500/10 flex items-center justify-center border border-white/5 shadow-inner">
+                 <GitMerge className="w-7 h-7 text-transparent bg-clip-text bg-gradient-to-br from-pink-400 to-blue-400" style={{ fill: 'currentColor' }} />
               </div>
               <div>
                  <h2 className="text-2xl font-bold text-white tracking-tight">Formation Analysis</h2>
@@ -278,12 +278,12 @@ export default function FormationAnalysis() {
            <div className="relative mb-8 group z-50">
                 <div 
                     onClick={() => setIsTeamDropdownOpen(!isTeamDropdownOpen)}
-                    className="bg-black/30 p-1 rounded-2xl border border-white/5 cursor-pointer hover:border-purple-500/30 transition-all duration-300"
+                    className="bg-black/30 p-1 rounded-2xl border border-white/5 cursor-pointer hover:border-pink-500/30 transition-all duration-300"
                 >
                     <div className="flex items-center justify-between bg-[#1a1a1a] p-3 rounded-xl">
                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center">
-                                <Shield className="w-5 h-5 text-indigo-400" />
+                            <div className="w-10 h-10 rounded-lg bg-pink-500/20 flex items-center justify-center">
+                                <Shield className="w-5 h-5 text-pink-400" />
                             </div>
                             <div>
                                 <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-0.5">Analysis Target</div>
@@ -306,7 +306,7 @@ export default function FormationAnalysis() {
                                     setIsTeamDropdownOpen(false);
                                 }}
                                 className={`px-4 py-3 rounded-xl cursor-pointer flex items-center gap-3 transition-all ${
-                                    selectedTeam === team ? 'bg-purple-600 text-white shadow-lg' : 'hover:bg-white/5 text-zinc-400 hover:text-white'
+                                    selectedTeam === team ? 'bg-pink-600 text-white shadow-lg' : 'hover:bg-white/5 text-zinc-400 hover:text-white'
                                 }`}
                             >
                                 <Shield className="w-4 h-4 opacity-70" />
@@ -378,7 +378,7 @@ export default function FormationAnalysis() {
 
            {analysisMode === 'transfer' && (
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                 <div className="flex items-center gap-3 mb-2 p-4 bg-[#1a1a1a] border border-white/5 rounded-2xl focus-within:border-purple-500/50 transition-colors shadow-inner">
+                 <div className="flex items-center gap-3 mb-2 p-4 bg-[#1a1a1a] border border-white/5 rounded-2xl focus-within:border-pink-500/50 transition-colors shadow-inner">
                     <Search className="w-4 h-4 text-zinc-500" />
                     <input 
                        placeholder="Search replacement..." 
@@ -390,14 +390,14 @@ export default function FormationAnalysis() {
                  
                  <div className="space-y-3">
                     <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2 pl-1">
-                       <Zap className="w-3 h-3 text-purple-500" />
+                       <Zap className="w-3 h-3 text-pink-500" />
                        High Synergy Targets
                     </h3>
                     {suggestedPlayers.map(p => (
-                       <div key={p.id} className="p-4 bg-gradient-to-r from-white/[0.03] to-transparent border border-white/5 rounded-2xl hover:border-purple-500/30 hover:from-purple-500/5 cursor-pointer group transition-all duration-300">
+                       <div key={p.id} className="p-4 bg-gradient-to-r from-white/[0.03] to-transparent border border-white/5 rounded-2xl hover:border-pink-500/30 hover:from-pink-500/5 cursor-pointer group transition-all duration-300">
                           <div className="flex justify-between items-start mb-3">
                              <div>
-                                <div className="text-sm font-bold text-white group-hover:text-purple-400 transition-colors">{p.name}</div>
+                                <div className="text-sm font-bold text-white group-hover:text-pink-400 transition-colors">{p.name}</div>
                                 <div className="text-xs text-zinc-500 mt-0.5">{p.team} • {p.position}</div>
                              </div>
                              <div className="text-right">
@@ -407,7 +407,7 @@ export default function FormationAnalysis() {
                           </div>
                           <div className="flex items-center justify-between mt-2">
                              <div className="text-xs font-mono text-zinc-400">{p.cost}</div>
-                             <button className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-purple-600 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:text-white transition-all border border-white/5 hover:border-purple-500">
+                             <button className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-pink-600 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:text-white transition-all border border-white/5 hover:border-pink-500">
                                 Simulate
                              </button>
                           </div>
@@ -420,21 +420,21 @@ export default function FormationAnalysis() {
            {analysisMode === 'fit_to_player' && (
                <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                    <div 
-                        className="p-5 bg-gradient-to-br from-purple-900/20 to-blue-900/10 border border-purple-500/20 rounded-2xl cursor-pointer hover:border-purple-500/40 transition-all group relative overflow-hidden" 
+                        className="p-5 bg-gradient-to-br from-pink-900/20 to-blue-900/10 border border-pink-500/20 rounded-2xl cursor-pointer hover:border-pink-500/40 transition-all group relative overflow-hidden" 
                         onClick={() => selectedPlayer && setShowPlayerDetail(true)}
                     >
-                       <div className="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                       <div className="absolute inset-0 bg-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                        <div className="relative z-10 flex items-center gap-4">
                            {selectedPlayer ? (
                                <>
-                                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-sm font-black text-white shadow-lg">
+                                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-blue-600 flex items-center justify-center text-sm font-black text-white shadow-lg">
                                         {selectedPlayer.position}
                                    </div>
                                    <div className="flex-1">
-                                       <div className="text-xs font-bold text-purple-400 mb-0.5 uppercase tracking-wider">Analyzing</div>
+                                       <div className="text-xs font-bold text-pink-400 mb-0.5 uppercase tracking-wider">Analyzing</div>
                                        <div className="text-lg font-bold text-white">{selectedPlayer.name}</div>
                                    </div>
-                                   <ChevronRight className="w-5 h-5 text-purple-400 group-hover:translate-x-1 transition-transform" />
+                                   <ChevronRight className="w-5 h-5 text-pink-400 group-hover:translate-x-1 transition-transform" />
                                </>
                            ) : (
                                <>
@@ -487,7 +487,7 @@ export default function FormationAnalysis() {
                          {p.position}
                       </div>
                       <div>
-                         <div className="text-sm font-bold text-white group-hover:text-purple-400 transition-colors">{p.name}</div>
+                         <div className="text-sm font-bold text-white group-hover:text-pink-400 transition-colors">{p.name}</div>
                          <div className={`text-[10px] font-medium flex items-center gap-1.5 ${p.isWeakLink ? 'text-red-400' : 'text-zinc-500'}`}>
                             {p.isWeakLink ? (
                                 <>
@@ -523,7 +523,7 @@ export default function FormationAnalysis() {
               onClick={() => setShowLIM(!showLIM)}
               className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 border backdrop-blur-md transition-all ${
                  showLIM 
-                    ? 'bg-purple-600/90 text-white border-purple-500/50 shadow-[0_0_20px_rgba(147,51,234,0.3)]' 
+                    ? 'bg-pink-600/90 text-white border-pink-500/50 shadow-[0_0_20px_rgba(244,114,182,0.3)]' 
                     : 'bg-black/40 text-zinc-400 border-white/10 hover:text-white hover:bg-black/60'
               }`}
            >
@@ -662,7 +662,7 @@ export default function FormationAnalysis() {
 
                 <div className="flex items-center gap-6 mb-8 mt-4">
                   <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-[#1a1a1a] to-black border border-white/10 flex items-center justify-center shadow-2xl relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <User className="w-10 h-10 text-zinc-500 group-hover:text-zinc-300 transition-colors" />
                   </div>
                   <div>
@@ -683,7 +683,7 @@ export default function FormationAnalysis() {
                     <div className="grid grid-cols-2 gap-3">
                         <div className="bg-white/[0.02] p-5 rounded-2xl border border-white/5 hover:bg-white/[0.04] transition-colors group">
                             <div className="flex items-center gap-2 mb-2">
-                                <Target className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
+                                <Target className="w-4 h-4 text-pink-400 group-hover:scale-110 transition-transform" />
                                 <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Influence</span>
                             </div>
                             <div className="text-3xl font-bold text-white tracking-tight">{selectedDetail.influence_score.toFixed(2)}</div>
@@ -699,7 +699,7 @@ export default function FormationAnalysis() {
 
                     {/* Radar Chart */}
                     <div className="bg-white/[0.02] rounded-3xl border border-white/5 p-6 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-20 bg-purple-500/5 blur-[60px] rounded-full pointer-events-none" />
+                        <div className="absolute top-0 right-0 p-20 bg-pink-500/5 blur-[60px] rounded-full pointer-events-none" />
                         <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                             <Activity className="w-3 h-3" />
                             Performance DNA

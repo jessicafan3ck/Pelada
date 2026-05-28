@@ -59,7 +59,7 @@ export default function HistoricalAnalysis() {
                  <select
                    value={selectedTeam}
                    onChange={(e) => setSelectedTeam(e.target.value)}
-                   className="w-full bg-[#09090b] border border-white/10 rounded-lg px-3 py-2 text-sm text-white appearance-none focus:outline-none focus:border-purple-500/50"
+                   className="w-full bg-[#09090b] border border-white/10 rounded-lg px-3 py-2 text-sm text-white appearance-none focus:outline-none focus:border-green-500/50"
                  >
                    {teams.map((team) => (
                      <option key={team.id} value={team.id}>{team.name}</option>
@@ -78,7 +78,7 @@ export default function HistoricalAnalysis() {
                      onClick={() => setSelectedPeriod(period.toLowerCase())}
                      className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors border ${
                        selectedPeriod === period.toLowerCase()
-                         ? 'bg-purple-600/10 border-purple-500/50 text-purple-400'
+                         ? 'bg-green-600/10 border-green-500/50 text-green-400'
                          : 'bg-[#09090b] border-white/5 text-zinc-400 hover:text-white'
                      }`}
                    >

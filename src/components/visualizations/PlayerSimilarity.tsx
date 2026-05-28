@@ -668,7 +668,7 @@ export default function ScoutPage() {
             {/* Co-Pilot CTA */}
             <button
               onClick={() => setCopilotQuery(`Analyze ${p.name}'s playing style and WC 2022 performance. They had ${fmt('xgPerMatch', p.xgPerMatch)} xG/match, ${fmt('passCompletion', p.passCompletion)} pass completion, and ${fmt('pressuresPerMatch', p.pressuresPerMatch)} pressures/match. Give a sharp tactical profile.`)}
-              className="flex items-center gap-2 px-5 py-3 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/20 rounded-xl text-sm text-purple-300 font-medium transition-all">
+              className="flex items-center gap-2 px-5 py-3 bg-green-600/20 hover:bg-green-600/30 border border-green-500/20 rounded-xl text-sm text-green-300 font-medium transition-all">
               <MessageSquare className="w-4 h-4" />
               Ask Co-Pilot about {p.name}
             </button>
@@ -734,7 +734,7 @@ export default function ScoutPage() {
           </div>
         ))}
         <button onClick={interpretClusters} disabled={interpreting}
-          className="ml-auto flex items-center gap-2 px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/20 rounded-lg text-xs text-purple-300 font-medium transition-all disabled:opacity-40">
+          className="ml-auto flex items-center gap-2 px-3 py-2 bg-green-600/20 hover:bg-green-600/30 border border-green-500/20 rounded-lg text-xs text-green-300 font-medium transition-all disabled:opacity-40">
           {interpreting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
           Interpret clusters
         </button>

@@ -70,7 +70,7 @@ export default function BenchmarkBuilder() {
           <div className="flex justify-between items-end">
               <div>
                   <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
-                      <Activity className="w-8 h-8 text-purple-400" />
+                      <Activity className="w-8 h-8 text-pink-400" />
                       Benchmark Suite
                   </h1>
                   <p className="text-zinc-400 mt-2">Define success criteria and stress-test your tactical systems.</p>
@@ -193,7 +193,7 @@ export default function BenchmarkBuilder() {
                <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Active List</span>
                <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-zinc-300">{benchmarks.length} items</span>
            </div>
-          <button className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-purple-600/25 group">
+          <button className="w-full py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-pink-600/25 group">
             <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
             New Benchmark
           </button>
@@ -203,11 +203,11 @@ export default function BenchmarkBuilder() {
            {benchmarks.map((b) => (
              <div key={b.id} className={`p-4 rounded-2xl border transition-all cursor-pointer group hover:shadow-lg hover:-translate-y-0.5 ${
                 b.id === 1 
-                  ? 'bg-purple-900/10 border-purple-500/30' 
-                  : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-purple-500/30'
+                  ? 'bg-pink-900/10 border-pink-500/30' 
+                  : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-pink-500/30'
              }`}>
                <div className="flex justify-between items-start mb-2">
-                 <span className={`text-sm font-bold transition-colors ${b.id === 1 ? 'text-white' : 'text-zinc-300 group-hover:text-purple-400'}`}>{b.name}</span>
+                 <span className={`text-sm font-bold transition-colors ${b.id === 1 ? 'text-white' : 'text-zinc-300 group-hover:text-pink-400'}`}>{b.name}</span>
                  {b.scope === 'public' ? (
                    <Globe className="w-3 h-3 text-zinc-500" />
                  ) : (
@@ -233,8 +233,8 @@ export default function BenchmarkBuilder() {
         {/* Header */}
         <div className="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-white/[0.02] backdrop-blur-sm relative z-10">
           <div className="flex items-center gap-4">
-            <div className="p-2.5 bg-purple-500/10 rounded-xl border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.1)]">
-              <Activity className="w-5 h-5 text-purple-400" />
+            <div className="p-2.5 bg-pink-500/10 rounded-xl border border-pink-500/20 shadow-[0_0_10px_rgba(244,114,182,0.1)]">
+              <Activity className="w-5 h-5 text-pink-400" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">Create Benchmark Suite</h2>
@@ -282,14 +282,14 @@ export default function BenchmarkBuilder() {
                  <input 
                    type="text" 
                    defaultValue="Low Block Penetration Test"
-                   className="w-full bg-black/20 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-purple-500/50 focus:bg-black/40 transition-all font-medium text-lg placeholder:text-zinc-600"
+                   className="w-full bg-black/20 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-pink-500/50 focus:bg-black/40 transition-all font-medium text-lg placeholder:text-zinc-600"
                  />
                </div>
                <div>
                  <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Description</label>
                  <textarea 
                    defaultValue="Assesses ability to generate xG against a compact 4-4-2 defensive block."
-                   className="w-full h-28 bg-black/20 border border-white/10 rounded-xl px-5 py-3 text-white resize-none focus:outline-none focus:border-purple-500/50 focus:bg-black/40 transition-all text-sm leading-relaxed placeholder:text-zinc-600"
+                   className="w-full h-28 bg-black/20 border border-white/10 rounded-xl px-5 py-3 text-white resize-none focus:outline-none focus:border-pink-500/50 focus:bg-black/40 transition-all text-sm leading-relaxed placeholder:text-zinc-600"
                  />
                </div>
              </div>
@@ -298,10 +298,10 @@ export default function BenchmarkBuilder() {
              <div className="p-6 bg-black/20 rounded-2xl border border-white/5">
                <div className="flex items-center justify-between mb-6">
                  <h3 className="text-sm font-bold text-white flex items-center gap-2 uppercase tracking-wide">
-                   <Target className="w-4 h-4 text-purple-400" />
+                   <Target className="w-4 h-4 text-pink-400" />
                    Success Metrics
                  </h3>
-                 <button className="text-xs text-purple-400 hover:text-purple-300 font-bold flex items-center gap-1 uppercase tracking-wider bg-purple-500/10 px-3 py-1.5 rounded-lg border border-purple-500/20 hover:bg-purple-500/20 transition-all">
+                 <button className="text-xs text-pink-400 hover:text-pink-300 font-bold flex items-center gap-1 uppercase tracking-wider bg-pink-500/10 px-3 py-1.5 rounded-lg border border-pink-500/20 hover:bg-pink-500/20 transition-all">
                    <Plus className="w-3 h-3" /> Add Metric
                  </button>
                </div>
@@ -328,7 +328,7 @@ export default function BenchmarkBuilder() {
                          </select>
                        </div>
                        <div className="col-span-3">
-                         <input type="text" defaultValue={m.val} className="w-full bg-black/40 rounded-lg px-2 py-1 text-sm text-white font-mono font-bold focus:outline-none text-center border border-white/10 focus:border-purple-500/50" />
+                         <input type="text" defaultValue={m.val} className="w-full bg-black/40 rounded-lg px-2 py-1 text-sm text-white font-mono font-bold focus:outline-none text-center border border-white/10 focus:border-pink-500/50" />
                        </div>
                        <div className="col-span-2 text-right">
                          <span className="text-xs text-zinc-500 font-medium">{m.unit}</span>

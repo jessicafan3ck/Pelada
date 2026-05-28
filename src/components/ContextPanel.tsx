@@ -114,7 +114,7 @@ export default function ContextPanel({ onNavigateToCopilot }: ContextPanelProps)
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/30 to-indigo-500/30 border border-purple-500/20 flex items-center justify-center text-lg font-bold text-purple-200">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-500/30 to-sky-700/30 border border-sky-500/20 flex items-center justify-center text-lg font-bold text-sky-200">
                 {selectedPlayer.jersey}
               </div>
               <div>
@@ -134,7 +134,7 @@ export default function ContextPanel({ onNavigateToCopilot }: ContextPanelProps)
             {/* Meta chips */}
             <div className="flex flex-wrap gap-2">
               <span className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 rounded-lg text-xs text-zinc-300 border border-white/8">
-                <Flag className="w-3 h-3 text-purple-400" />
+                <Flag className="w-3 h-3 text-sky-400" />
                 {selectedPlayer.country}
               </span>
               <span className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 rounded-lg text-xs text-zinc-300 border border-white/8">
@@ -149,8 +149,8 @@ export default function ContextPanel({ onNavigateToCopilot }: ContextPanelProps)
 
             {/* Match context */}
             {match && (
-              <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl px-4 py-3">
-                <p className="text-xs text-purple-300 font-medium">{match.stage}</p>
+              <div className="bg-sky-500/10 border border-sky-500/20 rounded-xl px-4 py-3">
+                <p className="text-xs text-sky-300 font-medium">{match.stage}</p>
                 <p className="text-sm text-white font-semibold mt-0.5">
                   {match.home_team} {match.home_score}–{match.away_score} {match.away_team}
                 </p>
@@ -209,7 +209,7 @@ export default function ContextPanel({ onNavigateToCopilot }: ContextPanelProps)
                   setContextPanelOpen(false);
                   onNavigateToCopilot?.();
                 }}
-                className="w-full flex items-center gap-2 px-4 py-3 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 rounded-xl text-sm text-purple-200 font-medium transition-all"
+                className="w-full flex items-center gap-2 px-4 py-3 bg-sky-600/20 hover:bg-sky-600/30 border border-sky-500/30 rounded-xl text-sm text-sky-200 font-medium transition-all"
               >
                 <Target className="w-4 h-4" />
                 Ask Co-Pilot about {selectedPlayer.nickname} in this match

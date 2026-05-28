@@ -197,7 +197,7 @@ const EVENT_STYLE: Record<EventType, string> = {
   shot:    'text-orange-400',
   save:    'text-blue-400',
   tackle:  'text-red-400',
-  dribble: 'text-purple-400',
+  dribble: 'text-pink-400',
   pass:    'text-zinc-400',
   info:    'text-zinc-500 italic',
 };
@@ -348,7 +348,7 @@ export default function MCMCSimulation() {
             </div>
             <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
               <div className="h-full rounded-full transition-all duration-500"
-                style={{ width: `${homePct}%`, background: 'linear-gradient(to right, rgba(6,182,212,0.8), rgba(99,102,241,0.6))' }} />
+                style={{ width: `${homePct}%`, background: 'linear-gradient(to right, rgba(6,182,212,0.8), rgba(244,114,182,0.6))' }} />
             </div>
             <div className="flex justify-between text-[10px] text-zinc-600 pt-1 border-t border-white/5">
               <span>Shots {sim.shots[0]}</span>
@@ -380,7 +380,7 @@ export default function MCMCSimulation() {
             {([['Slow', 1400], ['Normal', 700], ['Fast', 180]] as const).map(([l, ms]) => (
               <button key={l} onClick={() => setSpeed(ms)}
                 className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
-                  speed === ms ? 'bg-indigo-500/15 border border-indigo-500/25 text-indigo-400' : 'bg-white/5 border border-white/10 text-zinc-600 hover:text-white'
+                  speed === ms ? 'bg-pink-500/15 border border-pink-500/25 text-pink-400' : 'bg-white/5 border border-white/10 text-zinc-600 hover:text-white'
                 }`}>{l}</button>
             ))}
           </div>

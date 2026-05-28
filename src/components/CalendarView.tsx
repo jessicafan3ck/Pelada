@@ -68,7 +68,7 @@ export default function CalendarView() {
         {/* Header */}
         <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
            <div className="flex items-center gap-4">
-              <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
+              <div className="p-2 bg-green-500/10 rounded-lg text-green-400">
                  <CalendarIcon className="w-5 h-5" />
               </div>
               <span className="font-bold text-white text-lg">{currentMonth}</span>
@@ -97,14 +97,14 @@ export default function CalendarView() {
                     key={day}
                     onClick={() => setSelectedDay(day)}
                     className={`aspect-square rounded-xl flex flex-col items-center justify-center text-sm font-medium transition-all relative group ${
-                       isSelected 
-                          ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/25' 
+                       isSelected
+                          ? 'bg-green-600 text-white shadow-lg shadow-green-600/25'
                           : 'hover:bg-white/5 text-zinc-400 hover:text-white'
                     }`}
                  >
                     {day}
                     {hasMatch && (
-                       <div className={`absolute bottom-1.5 w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-purple-500'}`} />
+                       <div className={`absolute bottom-1.5 w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-green-500'}`} />
                     )}
                  </button>
               );
@@ -124,7 +124,7 @@ export default function CalendarView() {
               </div>
               <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 cursor-pointer hover:bg-white/10 transition-colors">
                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_8px_#a855f7]" />
+                    <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]" />
                     <span className="text-sm font-medium text-white">Champions League</span>
                  </div>
                  <span className="text-xs text-zinc-500">5</span>
@@ -147,7 +147,7 @@ export default function CalendarView() {
                   <input 
                      type="text" 
                      placeholder="Search archive..." 
-                     className="bg-black/20 border border-white/5 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-purple-500/50 w-64"
+                     className="bg-black/20 border border-white/5 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-green-500/50 w-64"
                   />
                </div>
                <button className="p-2 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-colors">
@@ -158,7 +158,7 @@ export default function CalendarView() {
 
          <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
             {matches.map((match) => (
-               <div key={match.id} className="mb-6 bg-[#0a0a0a] border border-white/5 rounded-2xl overflow-hidden group hover:border-purple-500/30 transition-all shadow-lg">
+               <div key={match.id} className="mb-6 bg-[#0a0a0a] border border-white/5 rounded-2xl overflow-hidden group hover:border-green-500/30 transition-all shadow-lg">
                   {/* Match Header */}
                   <div className="p-6 flex items-center justify-between bg-gradient-to-r from-white/[0.02] to-transparent">
                      <div className="flex items-center gap-8">
