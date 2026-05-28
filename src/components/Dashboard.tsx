@@ -64,17 +64,22 @@ const CATEGORIES: { id: Category; label: string; icon: typeof Box }[] = [
 ];
 
 function useCountdown() {
-  const [days, setDays] = useState(0);
+  const [t, setT] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   useEffect(() => {
     const update = () => {
-      const diff = WWC_START.getTime() - Date.now();
-      setDays(Math.max(0, Math.floor(diff / 86_400_000)));
+      const diff = Math.max(0, WWC_START.getTime() - Date.now());
+      setT({
+        days:    Math.floor(diff / 86_400_000),
+        hours:   Math.floor((diff % 86_400_000) / 3_600_000),
+        minutes: Math.floor((diff % 3_600_000) / 60_000),
+        seconds: Math.floor((diff % 60_000) / 1_000),
+      });
     };
     update();
-    const id = setInterval(update, 60_000);
+    const id = setInterval(update, 1_000);
     return () => clearInterval(id);
   }, []);
-  return days;
+  return t;
 }
 
 const OTHER_MATCHES = [
@@ -84,7 +89,7 @@ const OTHER_MATCHES = [
 ];
 
 export default function Dashboard({ onOpenAgent, onNavigate }: DashboardProps) {
-  const days = useCountdown();
+  const { days, hours, minutes, seconds } = useCountdown();
   const [activeCategory, setActiveCategory] = useState<Category>('all');
 
   const filtered = activeCategory === 'all'
@@ -125,12 +130,22 @@ export default function Dashboard({ onOpenAgent, onNavigate }: DashboardProps) {
             </div>
           </div>
 
-          {/* Right: stats */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '36px', marginRight: '8px' }}>
-            {([{ n: days, l: 'Days Away' }, { n: 32, l: 'Teams' }, { n: 64, l: 'Matches' }] as const).map(({ n, l }) => (
-              <div key={l} style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '50px', fontWeight: 900, color: '#000', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{n}</div>
-                <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(0,0,0,0.45)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '6px' }}>{l}</div>
+          {/* Right: live countdown clock */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginRight: '8px' }}>
+            {([
+              { n: String(days),                          l: 'Days'    },
+              { n: String(hours).padStart(2, '0'),        l: 'Hours'   },
+              { n: String(minutes).padStart(2, '0'),      l: 'Min'     },
+              { n: String(seconds).padStart(2, '0'),      l: 'Sec'     },
+            ] as const).map(({ n, l }, i) => (
+              <div key={l} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                {i > 0 && (
+                  <div style={{ fontSize: '36px', fontWeight: 900, color: 'rgba(0,0,0,0.3)', lineHeight: 1, marginBottom: '16px' }}>:</div>
+                )}
+                <div style={{ textAlign: 'center', minWidth: l === 'Days' ? '72px' : '56px' }}>
+                  <div style={{ fontSize: l === 'Days' ? '48px' : '42px', fontWeight: 900, color: '#000', fontVariantNumeric: 'tabular-nums', lineHeight: 1, fontFeatureSettings: '"tnum"' }}>{n}</div>
+                  <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '6px' }}>{l}</div>
+                </div>
               </div>
             ))}
           </div>
