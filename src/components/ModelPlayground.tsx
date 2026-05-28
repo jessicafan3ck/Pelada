@@ -115,6 +115,8 @@ export default function ModelPlayground() {
   const [agentOutput, setAgentOutput] = useState<{ type: string; line: string }[]>([]);
   const [agentRunning, setAgentRunning] = useState(false);
   const [agentWaiting, setAgentWaiting] = useState(false);
+  const [agentLastCode, setAgentLastCode] = useState('');
+  const [interpreting, setInterpreting] = useState(false);
   const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
   const agentOutputRef = useRef<HTMLDivElement>(null);
 
@@ -145,8 +147,35 @@ export default function ModelPlayground() {
     agentOutputRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [agentOutput]);
 
+  const interpretOutput = async () => {
+    if (!agentOutput.length) return;
+    const output = agentOutput.map(o => o.line).join('\n');
+    setInterpreting(true);
+    try {
+      const res = await fetch('/api/langgraph', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `The following Python code was run:\n\`\`\`python\n${agentLastCode}\n\`\`\`\n\nOutput:\n${output}\n\nPlease interpret these results in plain language for a football analyst.`,
+          history: [],
+          mode: 'model'
+        })
+      });
+      const data = await res.json();
+      setChatMessages(prev => [...prev, {
+        role: 'ai',
+        text: data.final_response || 'Could not interpret the output.'
+      }]);
+    } catch {
+      setChatMessages(prev => [...prev, { role: 'ai', text: 'Failed to interpret output.' }]);
+    } finally {
+      setInterpreting(false);
+    }
+  };
+
   const runInAgent = async (code: string) => {
     if (!agentConnected) return;
+    setAgentLastCode(code);
     setAgentOutput([]);
     setAgentRunning(true);
     try {
@@ -709,7 +738,15 @@ export default function ModelPlayground() {
             <div className="flex items-center gap-2 px-4 py-2 border-b border-white/5 bg-white/[0.02]">
               <Terminal className="w-3.5 h-3.5 text-green-400" />
               <span className="text-xs font-bold text-green-400 uppercase tracking-wider">Agent Output</span>
-              {agentRunning && <span className="ml-auto w-2 h-2 rounded-full bg-green-400 animate-pulse" />}
+              {agentRunning && <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />}
+              <button
+                onClick={interpretOutput}
+                disabled={agentRunning || interpreting}
+                className="ml-auto flex items-center gap-1.5 px-3 py-1 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 hover:bg-purple-500/20 text-[10px] font-bold uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Sparkles className="w-3 h-3" />
+                {interpreting ? 'Interpreting…' : 'Interpret'}
+              </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 font-mono text-xs space-y-0.5">
               {agentOutput.map((o, i) => (
