@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Play,
   Upload,
@@ -17,9 +17,14 @@ import {
   Search,
   Filter,
   Star,
-  GitBranch
+  GitBranch,
+  Wifi,
+  WifiOff,
+  Zap,
 } from 'lucide-react';
 import PythonRunner from './PythonRunner';
+
+const AGENT_URL = 'http://localhost:7337';
 
 type ViewMode = 'discovery' | 'workbench' | 'create_model' | 'upload_dataset';
 
@@ -104,6 +109,52 @@ export default function ModelPlayground() {
   const [creatorSelectedDataset, setCreatorSelectedDataset] = useState<string>('');
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // --- Agent State ---
+  const [agentConnected, setAgentConnected] = useState(false);
+  const [agentOutput, setAgentOutput] = useState<{ type: string; line: string }[]>([]);
+  const [agentRunning, setAgentRunning] = useState(false);
+  const agentOutputRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const r = await fetch(`${AGENT_URL}/health`, { signal: AbortSignal.timeout(2000) });
+        setAgentConnected(r.ok);
+      } catch {
+        setAgentConnected(false);
+      }
+    };
+    check();
+    const id = setInterval(check, 5000);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    agentOutputRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [agentOutput]);
+
+  const runInAgent = async (code: string) => {
+    if (!agentConnected) return;
+    setAgentOutput([]);
+    setAgentRunning(true);
+    try {
+      const res = await fetch(`${AGENT_URL}/run`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+      const { task_id } = await res.json();
+      const evtSource = new EventSource(`${AGENT_URL}/stream/${task_id}`);
+      evtSource.addEventListener('out',   (e) => setAgentOutput(p => [...p, { type: 'out',   line: (e as MessageEvent).data }]));
+      evtSource.addEventListener('error', (e) => { setAgentOutput(p => [...p, { type: 'error', line: (e as MessageEvent).data || 'Error' }]); setAgentRunning(false); evtSource.close(); });
+      evtSource.addEventListener('done',  ()  => { setAgentRunning(false); evtSource.close(); });
+      evtSource.onerror = () => { setAgentRunning(false); evtSource.close(); };
+    } catch (e) {
+      setAgentOutput([{ type: 'error', line: String(e) }]);
+      setAgentRunning(false);
+    }
+  };
 
   // --- Uploader State ---
   const [uploadStep, setUploadStep] = useState<'select' | 'parsing' | 'review'>('select');
@@ -500,16 +551,27 @@ export default function ModelPlayground() {
   const renderModelCreator = () => (
     <div className="h-full flex flex-col gap-6 animate-in slide-in-from-right-8 duration-500">
       {/* Header & Back Button */}
-      <div className="flex items-center gap-4 shrink-0">
-        <button 
-           onClick={() => setViewMode('discovery')}
-           className="p-2 bg-white/5 hover:bg-white/10 rounded-xl text-zinc-400 hover:text-white transition-colors border border-white/5"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <div>
+      <div className="flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setViewMode('discovery')}
+            className="p-2 bg-white/5 hover:bg-white/10 rounded-xl text-zinc-400 hover:text-white transition-colors border border-white/5"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div>
             <h2 className="text-xl font-bold text-white">Model Studio</h2>
             <p className="text-xs text-zinc-400">Design and configure new predictive engines.</p>
+          </div>
+        </div>
+        {/* Agent connection status */}
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all ${
+          agentConnected
+            ? 'bg-green-500/10 border-green-500/30 text-green-400'
+            : 'bg-white/5 border-white/10 text-zinc-500'
+        }`}>
+          {agentConnected ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
+          {agentConnected ? 'Agent Connected' : 'Agent Offline'}
         </div>
       </div>
 
@@ -536,8 +598,16 @@ export default function ModelPlayground() {
                   }`}>
                     <p className="mb-2">{msg.text}</p>
                     {msg.code && (
-                      <div className="mt-3">
+                      <div className="mt-3 space-y-2">
                         <PythonRunner code={msg.code.code} />
+                        <button
+                          onClick={() => runInAgent(msg.code!.code)}
+                          disabled={!agentConnected || agentRunning}
+                          className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-green-500/10 border border-green-500/25 text-green-400 hover:bg-green-500/20 transition-all text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          <Zap className="w-3.5 h-3.5" />
+                          {agentRunning ? 'Running…' : agentConnected ? 'Run in Agent' : 'Agent Offline — run pelada-agent.py'}
+                        </button>
                       </div>
                     )}
                   </div>
@@ -572,8 +642,30 @@ export default function ModelPlayground() {
            </div>
         </div>
 
+        {/* Right column — Configuration + Agent Output */}
+        <div className="w-1/2 flex flex-col gap-4 min-h-0">
+
+        {/* Agent Output Panel — shown when there's output */}
+        {agentOutput.length > 0 && (
+          <div className="bg-black/60 backdrop-blur-xl rounded-2xl border border-green-500/20 flex flex-col overflow-hidden max-h-64 shrink-0">
+            <div className="flex items-center gap-2 px-4 py-2 border-b border-white/5 bg-white/[0.02]">
+              <Terminal className="w-3.5 h-3.5 text-green-400" />
+              <span className="text-xs font-bold text-green-400 uppercase tracking-wider">Agent Output</span>
+              {agentRunning && <span className="ml-auto w-2 h-2 rounded-full bg-green-400 animate-pulse" />}
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 font-mono text-xs space-y-0.5">
+              {agentOutput.map((o, i) => (
+                <div key={i} className={o.type === 'error' ? 'text-red-400' : 'text-green-300'}>
+                  {o.line}
+                </div>
+              ))}
+              <div ref={agentOutputRef} />
+            </div>
+          </div>
+        )}
+
         {/* Configuration Panel */}
-        <div className="w-1/2 flex flex-col bg-black/40 backdrop-blur-2xl rounded-3xl border border-white/5 overflow-hidden shadow-xl">
+        <div className="flex-1 flex flex-col bg-black/40 backdrop-blur-2xl rounded-3xl border border-white/5 overflow-hidden shadow-xl">
            <div className="p-6 border-b border-white/5">
               <h2 className="text-lg font-bold text-white mb-1">Configuration</h2>
               <p className="text-xs text-zinc-400">Link data sources and select features.</p>
@@ -652,6 +744,8 @@ export default function ModelPlayground() {
                  Compile Model
               </button>
            </div>
+        </div>
+        {/* end right column wrapper */}
         </div>
       </div>
     </div>
