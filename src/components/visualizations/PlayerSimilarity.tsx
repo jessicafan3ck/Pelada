@@ -88,6 +88,12 @@ function ordinal(n: number) {
   return `${n}${s[n % 10] ?? 'th'}`;
 }
 
+// ── helpers ───────────────────────────────────────────────────────────────────
+
+function stripWomens(team: string): string {
+  return team.replace(/\bWomen'?s\b/gi, '').replace(/\s{2,}/g, ' ').trim();
+}
+
 // ── types ─────────────────────────────────────────────────────────────────────
 
 interface PlayerRow {
@@ -95,6 +101,7 @@ interface PlayerRow {
   jersey: number; country: string; id: number; matchId: number;
   passVolume: number; passCompletion: number; xgPerMatch: number;
   shotsPerMatch: number; shotsOnTargetPerMatch: number; pressuresPerMatch: number; pressRate: number;
+  goalsPerMatch: number; dribbles: number;
   cluster?: number;
 }
 
@@ -359,7 +366,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 // ── main ──────────────────────────────────────────────────────────────────────
 
 export default function ScoutPage() {
-  const { events, lineups, playerStats, matchMeta } = useContext(DataContext) as any;
+  const { tournamentStats } = useContext(DataContext);
   const { setCopilotQuery } = useAppContext();
 
   const [tab, setTab] = useState<Tab>('cards');
@@ -376,47 +383,38 @@ export default function ScoutPage() {
   const [interpreting, setInterpreting] = useState(false);
   const wikiCache = useRef<Map<string, { text: string; thumb: string }>>(new Map());
 
-  // ── build player rows ────────────────────────────────────────────────────
+  // ── build player rows from WWC 2023 tournament stats ────────────────────
 
   const allPlayers = useMemo<PlayerRow[]>(() => {
-    const info = new Map<string, { position: string; jersey: number; country: string; id: number; matchId: number }>();
-    for (const [midStr, teams] of Object.entries(lineups as Record<string, Record<string, any[]>>)) {
-      for (const players of Object.values(teams)) {
-        for (const p of players as any[]) {
-          if (!info.has(p.name)) info.set(p.name, { position: p.position ?? '', jersey: p.jersey ?? 0, country: p.country ?? '', id: p.id ?? 0, matchId: parseInt(midStr) });
-        }
-      }
-    }
-    const map = new Map<string, { name: string; team: string; matches: Set<number>; passes: number; complete: number; shots: number; shotsOT: number; xg: number; pressures: number; total: number }>();
-    for (const e of events as any[]) {
-      if (!e.from_player_name) continue;
-      if (!map.has(e.from_player_name)) map.set(e.from_player_name, { name: e.from_player_name, team: e.team_name ?? '', matches: new Set(), passes: 0, complete: 0, shots: 0, shotsOT: 0, xg: 0, pressures: 0, total: 0 });
-      const s = map.get(e.from_player_name)!;
-      s.matches.add(e.match_id); s.total++;
-      if (e.event === 'pass') { s.passes++; if (e.outcome === 'complete') s.complete++; }
-      else if (e.event === 'shot') { s.shots++; s.xg += e.xg ?? 0; if (['saved', 'goal'].includes(e.outcome ?? '')) s.shotsOT++; }
-      else if (e.event === 'pressure') s.pressures++;
-    }
+    if (!tournamentStats.length) return [];
 
-    const raw: PlayerRow[] = [];
-    for (const p of map.values()) {
-      if (p.total < 5) continue;
-      const m = Math.max(p.matches.size, 1);
-      const inf = info.get(p.name);
-      raw.push({
-        name: p.name, team: p.team,
-        position: inf?.position ?? '', posGroup: getPos(inf?.position ?? ''),
-        jersey: inf?.jersey ?? 0, country: inf?.country ?? '',
-        id: inf?.id ?? 0, matchId: inf?.matchId ?? 0,
-        passVolume: p.passes / m,
-        passCompletion: p.passes > 0 ? p.complete / p.passes : 0,
-        xgPerMatch: p.xg / m,
-        shotsPerMatch: p.shots / m,
-        shotsOnTargetPerMatch: p.shotsOT / m,
-        pressuresPerMatch: p.pressures / m,
-        pressRate: p.total > 0 ? p.pressures / p.total : 0,
+    const raw: PlayerRow[] = tournamentStats
+      .filter(s => s.matches_played > 0 && s.minutes_played > 0)
+      .map(s => {
+        const m = Math.max(s.matches_played, 1);
+        const totalActions = s.passes + s.shots + s.pressures;
+        return {
+          name:                  s.player_name,
+          team:                  stripWomens(s.team),
+          position:              s.position ?? '',
+          posGroup:              getPos(s.position ?? ''),
+          jersey:                0,
+          country:               '',
+          id:                    s.player_id,
+          matchId:               0,
+          passVolume:            s.passes / m,
+          passCompletion:        s.pass_pct ?? (s.passes > 0 ? s.passes_complete / s.passes : 0),
+          xgPerMatch:            s.xg / m,
+          shotsPerMatch:         s.shots / m,
+          shotsOnTargetPerMatch: s.shots_on_target / m,
+          pressuresPerMatch:     s.pressures / m,
+          pressRate:             totalActions > 0 ? s.pressures / totalActions : 0,
+          goalsPerMatch:         s.goals / m,
+          dribbles:              s.dribbles_complete,
+        };
       });
-    }
+
+    if (!raw.length) return [];
 
     const norms = [
       normalize(raw.map(r => r.passCompletion)),
@@ -427,7 +425,7 @@ export default function ScoutPage() {
     const features = raw.map((_, i) => norms.map(n => n[i]));
     const clusters = kmeans(features, K);
     return raw.map((r, i) => ({ ...r, cluster: clusters[i] }));
-  }, [events, lineups]);
+  }, [tournamentStats]);
 
   const filtered = useMemo(() =>
     allPlayers
@@ -440,41 +438,11 @@ export default function ScoutPage() {
   const selectedPlayer = useMemo(() => allPlayers.find(p => p.name === selected) ?? null, [allPlayers, selected]);
   const positionPeers = useMemo(() => selectedPlayer ? allPlayers.filter(p => p.posGroup === selectedPlayer.posGroup) : [], [allPlayers, selectedPlayer]);
 
-  const leagueRows = useMemo(() => {
-    if (!selected) return [];
-    const lower = selected.toLowerCase();
-    const last = lower.split(' ').slice(-1)[0];
-    return (playerStats as any[]).filter((p: any) => {
-      const fn = (p.full_name ?? '').toLowerCase();
-      return fn === lower || fn.includes(last);
-    });
-  }, [selected, playerStats]);
+  // League history not available from tournament aggregates — stub empty
+  const leagueRows: any[] = [];
 
-  // Per-match breakdown for selected player
-  const playerMatchStats = useMemo<MatchStat[]>(() => {
-    if (!selected) return [];
-    const matchMap = new Map<number, { passes: number; complete: number; shots: number; xg: number; pressures: number; opp: string }>();
-    for (const e of events as any[]) {
-      if (e.from_player_name !== selected) continue;
-      if (!matchMap.has(e.match_id)) {
-        const meta = (matchMeta as any[])?.find((m: any) => m.match_id === e.match_id);
-        const team = e.team_name;
-        const opp = meta ? (meta.home_team === team ? meta.away_team : meta.home_team) : `M${e.match_id}`;
-        matchMap.set(e.match_id, { passes: 0, complete: 0, shots: 0, xg: 0, pressures: 0, opp });
-      }
-      const m = matchMap.get(e.match_id)!;
-      if (e.event === 'pass') { m.passes++; if (e.outcome === 'complete') m.complete++; }
-      else if (e.event === 'shot') { m.shots++; m.xg += e.xg ?? 0; }
-      else if (e.event === 'pressure') m.pressures++;
-    }
-    return [...matchMap.values()].map(m => ({
-      opp: m.opp,
-      xg: parseFloat(m.xg.toFixed(2)),
-      passes: m.passes,
-      pressures: m.pressures,
-      passComp: m.passes > 0 ? Math.round(m.complete / m.passes * 100) : 0,
-    }));
-  }, [selected, events, matchMeta]);
+  // Per-match breakdown not available from tournament aggregates — stub empty
+  const playerMatchStats: MatchStat[] = [];
 
   const scatterByCluster = useMemo(() =>
     CLUSTER_COLORS.map((_, c) => filtered.filter(p => p.cluster === c).map(p => ({ ...p, x: (p as any)[scatterX], y: (p as any)[scatterY] }))),

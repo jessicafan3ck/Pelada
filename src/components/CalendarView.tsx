@@ -1,259 +1,349 @@
-import { useState } from 'react';
-import { 
-  Calendar as CalendarIcon, 
-  ChevronLeft, 
-  ChevronRight, 
-  Filter, 
-  Search, 
-  FileText, 
-  Activity, 
-  Target, 
-  Download,
-  MoreHorizontal
-} from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, MapPin, Shield } from 'lucide-react';
+import { getWWCMatches } from '../services/wwcData';
+import type { WWCMatch } from '../services/wwcData';
 
-export default function CalendarView() {
-  const [currentMonth, setCurrentMonth] = useState('May 2025');
-  const [selectedDay, setSelectedDay] = useState<number | null>(24);
+// ── Helpers ────────────────────────────────────────────────────────────────────
 
-  // Mock Data for matches
-  const matches = [
-    {
-      id: 1,
-      day: 24,
-      date: 'Sat 24 May',
-      home: 'Man City',
-      away: 'Real Madrid',
-      score: '2 - 1',
-      status: 'FT',
-      competition: 'Champions League',
-      type: 'Match Report',
-      tacticsSaved: true,
-      dataSaved: true
-    },
-    {
-      id: 2,
-      day: 18,
-      date: 'Sun 18 May',
-      home: 'Liverpool',
-      away: 'Man City',
-      score: '1 - 1',
-      status: 'FT',
-      competition: 'Premier League',
-      type: 'Match Report',
-      tacticsSaved: true,
-      dataSaved: true
-    },
-    {
-      id: 3,
-      day: 28,
-      date: 'Wed 28 May',
-      home: 'Man City',
-      away: 'Arsenal',
-      score: null,
-      status: 'Upcoming',
-      competition: 'Premier League',
-      type: 'Pre-Match',
-      tacticsSaved: false,
-      dataSaved: false
-    }
-  ];
+const STAGES = ['All', 'Group Stage', 'Round of 16', 'Quarter-finals', 'Semi-finals', 'Final'] as const;
+type StageFilter = typeof STAGES[number];
 
-  const days = Array.from({ length: 31 }, (_, i) => i + 1);
+const MONTHS = [
+  { label: 'July 2023',   year: 2023, month: 7 },
+  { label: 'August 2023', year: 2023, month: 8 },
+];
+
+const STAGE_COLORS: Record<string, string> = {
+  'Group Stage':    'bg-sky-500/15 text-sky-300 border-sky-500/30',
+  'Round of 16':    'bg-teal-500/15 text-teal-300 border-teal-500/30',
+  'Quarter-finals': 'bg-green-500/15 text-green-300 border-green-500/30',
+  'Semi-finals':    'bg-pink-500/15 text-pink-300 border-pink-500/30',
+  '3rd Place Final':'bg-pink-500/15 text-pink-300 border-pink-500/30',
+  'Final':          'bg-amber-500/15 text-amber-300 border-amber-500/30',
+};
+
+const BADGE_DOT: Record<string, string> = {
+  'Group Stage':    'bg-sky-400',
+  'Round of 16':    'bg-teal-400',
+  'Quarter-finals': 'bg-green-400',
+  'Semi-finals':    'bg-pink-400',
+  '3rd Place Final':'bg-pink-400',
+  'Final':          'bg-amber-400',
+};
+
+function stripWomens(name: string): string {
+  return name.replace(/\s*Women['']s\s*/i, '').trim();
+}
+
+/** Number of days in a given month (1-indexed). */
+function daysInMonth(year: number, month: number): number {
+  return new Date(year, month, 0).getDate();
+}
+
+/** Day-of-week index (0=Sun) for the 1st of the month. */
+function firstDayOfWeek(year: number, month: number): number {
+  return new Date(year, month - 1, 1).getDay();
+}
+
+/** "YYYY-MM-DD" for a given year/month/day. */
+function toDateStr(year: number, month: number, day: number): string {
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+// ── Skeleton ───────────────────────────────────────────────────────────────────
+
+function Skeleton({ className }: { className?: string }) {
+  return <div className={`animate-pulse bg-white/5 rounded-lg ${className ?? ''}`} />;
+}
+
+// ── Match Badge (on calendar cell) ────────────────────────────────────────────
+
+function MatchBadge({
+  match,
+  isSelected,
+  onClick,
+}: {
+  match: WWCMatch;
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  const home = stripWomens(match.home_team);
+  const away = stripWomens(match.away_team);
+  const scored = match.home_score != null && match.away_score != null;
+  const dotColor = BADGE_DOT[match.competition_stage] ?? 'bg-zinc-400';
 
   return (
-    <div className="flex h-[calc(100vh-140px)] gap-8">
-      {/* Calendar Sidebar */}
-      <div className="w-96 flex flex-col bg-black/40 backdrop-blur-2xl rounded-3xl border border-white/5 overflow-hidden shadow-xl">
-        {/* Header */}
-        <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-           <div className="flex items-center gap-4">
-              <div className="p-2 bg-green-500/10 rounded-lg text-green-400">
-                 <CalendarIcon className="w-5 h-5" />
-              </div>
-              <span className="font-bold text-white text-lg">{currentMonth}</span>
-           </div>
-           <div className="flex gap-1">
-              <button className="p-1 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white transition-colors">
-                 <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button className="p-1 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white transition-colors">
-                 <ChevronRight className="w-5 h-5" />
-              </button>
-           </div>
-        </div>
+    <button
+      onClick={onClick}
+      className={`w-full text-left px-1.5 py-1 rounded-md text-[10px] leading-tight transition-all border ${
+        isSelected
+          ? 'bg-[#00C2A8]/20 border-[#00C2A8]/50 text-white'
+          : 'bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10 hover:border-white/15'
+      }`}
+    >
+      <div className="flex items-center gap-1 mb-0.5">
+        <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColor}`} />
+        <span className="truncate font-semibold">{home}</span>
+      </div>
+      <div className="flex items-center justify-between pl-2.5">
+        <span className="truncate text-zinc-400">{away}</span>
+        {scored && (
+          <span className="text-[#00C2A8] font-bold ml-1 flex-shrink-0">
+            {match.home_score}–{match.away_score}
+          </span>
+        )}
+      </div>
+    </button>
+  );
+}
 
-        {/* Calendar Grid (Simple) */}
-        <div className="p-6 grid grid-cols-7 gap-2">
-           {['S','M','T','W','T','F','S'].map(d => (
-              <div key={d} className="text-center text-[10px] font-bold text-zinc-500 py-2">{d}</div>
-           ))}
-           {days.map(day => {
-              const hasMatch = matches.some(m => m.day === day);
-              const isSelected = selectedDay === day;
-              
-              return (
-                 <button 
-                    key={day}
-                    onClick={() => setSelectedDay(day)}
-                    className={`aspect-square rounded-xl flex flex-col items-center justify-center text-sm font-medium transition-all relative group ${
-                       isSelected
-                          ? 'bg-green-600 text-white shadow-lg shadow-green-600/25'
-                          : 'hover:bg-white/5 text-zinc-400 hover:text-white'
-                    }`}
-                 >
-                    {day}
-                    {hasMatch && (
-                       <div className={`absolute bottom-1.5 w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-green-500'}`} />
-                    )}
-                 </button>
-              );
-           })}
-        </div>
+// ── Detail Panel ───────────────────────────────────────────────────────────────
 
-        {/* Filter List */}
-        <div className="flex-1 p-6 border-t border-white/5">
-           <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Competitions</h4>
-           <div className="space-y-2">
-              <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 cursor-pointer hover:bg-white/10 transition-colors">
-                 <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" />
-                    <span className="text-sm font-medium text-white">Premier League</span>
-                 </div>
-                 <span className="text-xs text-zinc-500">12</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 cursor-pointer hover:bg-white/10 transition-colors">
-                 <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]" />
-                    <span className="text-sm font-medium text-white">Champions League</span>
-                 </div>
-                 <span className="text-xs text-zinc-500">5</span>
-              </div>
-           </div>
+function DetailPanel({ match, onClose }: { match: WWCMatch; onClose: () => void }) {
+  const home = stripWomens(match.home_team);
+  const away = stripWomens(match.away_team);
+  const scored = match.home_score != null && match.away_score != null;
+  const stageColor = STAGE_COLORS[match.competition_stage] ?? 'bg-zinc-500/15 text-zinc-300 border-zinc-500/30';
+  const dateObj = new Date(match.match_date + 'T00:00:00');
+  const dateLabel = dateObj.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' });
+
+  return (
+    <div className="flex flex-col h-full bg-black/40 backdrop-blur-2xl rounded-3xl border border-white/5 shadow-xl overflow-hidden">
+      {/* Header */}
+      <div className="p-6 border-b border-white/5 flex items-start justify-between bg-white/[0.02]">
+        <div>
+          <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold border ${stageColor} mb-3`}>
+            {match.competition_stage}
+          </span>
+          <div className="text-sm text-zinc-400">{dateLabel} · {match.kick_off?.slice(0, 5)}</div>
         </div>
+        <button
+          onClick={onClose}
+          className="text-zinc-500 hover:text-white transition-colors text-lg leading-none mt-1"
+        >
+          ✕
+        </button>
       </div>
 
-      {/* Main Content: Match List / Details */}
-      <div className="flex-1 flex flex-col min-w-0 bg-black/40 backdrop-blur-2xl rounded-3xl border border-white/5 overflow-hidden shadow-xl">
-         <div className="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-white/[0.02]">
-            <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-3">
-               Games & Analysis
-               <span className="px-2 py-0.5 rounded-md bg-white/5 text-[10px] text-zinc-400 font-medium border border-white/5">Archive</span>
-            </h2>
-            
-            <div className="flex gap-3">
-               <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-                  <input 
-                     type="text" 
-                     placeholder="Search archive..." 
-                     className="bg-black/20 border border-white/5 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-green-500/50 w-64"
-                  />
-               </div>
-               <button className="p-2 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-colors">
-                  <Filter className="w-5 h-5" />
-               </button>
-            </div>
-         </div>
+      {/* Score block */}
+      <div className="px-6 py-8 flex flex-col items-center gap-4 border-b border-white/5">
+        <div className="flex items-center gap-6 w-full">
+          <div className="flex-1 text-right">
+            <div className="text-xl font-bold text-white">{home}</div>
+            <div className="text-xs text-zinc-500 uppercase tracking-wider mt-0.5">Home</div>
+          </div>
+          <div className="px-5 py-3 bg-black rounded-xl border border-white/10 font-mono font-black text-2xl text-white min-w-[90px] text-center shadow-inner">
+            {scored ? `${match.home_score}–${match.away_score}` : 'vs'}
+          </div>
+          <div className="flex-1">
+            <div className="text-xl font-bold text-white">{away}</div>
+            <div className="text-xs text-zinc-500 uppercase tracking-wider mt-0.5">Away</div>
+          </div>
+        </div>
+        {scored && (
+          <span className="px-3 py-1 bg-[#00C2A8]/10 border border-[#00C2A8]/20 text-[#00C2A8] text-xs font-bold rounded-full">
+            Full Time
+          </span>
+        )}
+      </div>
 
-         <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-            {matches.map((match) => (
-               <div key={match.id} className="mb-6 bg-[#0a0a0a] border border-white/5 rounded-2xl overflow-hidden group hover:border-green-500/30 transition-all shadow-lg">
-                  {/* Match Header */}
-                  <div className="p-6 flex items-center justify-between bg-gradient-to-r from-white/[0.02] to-transparent">
-                     <div className="flex items-center gap-8">
-                        <div className="flex flex-col items-center min-w-[60px]">
-                           <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">{match.competition}</span>
-                           <span className="text-sm text-zinc-300">{match.date}</span>
-                        </div>
-                        
-                        <div className="flex items-center gap-6">
-                           <div className="text-right">
-                              <span className="text-xl font-bold text-white block">{match.home}</span>
-                              <span className="text-xs text-zinc-500 uppercase tracking-wider">Home</span>
-                           </div>
-                           <div className="px-4 py-2 bg-black rounded-lg border border-white/10 text-xl font-black text-white font-mono shadow-inner min-w-[80px] text-center">
-                              {match.score || 'VS'}
-                           </div>
-                           <div>
-                              <span className="text-xl font-bold text-white block">{match.away}</span>
-                              <span className="text-xs text-zinc-500 uppercase tracking-wider">Away</span>
-                           </div>
-                        </div>
-                     </div>
+      {/* Meta */}
+      <div className="px-6 py-5 space-y-3">
+        <div className="flex items-center gap-3 text-sm text-zinc-300">
+          <MapPin className="w-4 h-4 text-zinc-500 flex-shrink-0" />
+          <span>{match.stadium}{match.stadium_country ? `, ${match.stadium_country}` : ''}</span>
+        </div>
+        <div className="flex items-center gap-3 text-sm text-zinc-300">
+          <Shield className="w-4 h-4 text-zinc-500 flex-shrink-0" />
+          <span>{match.competition_stage}</span>
+        </div>
+        {match.home_group && (
+          <div className="text-sm text-zinc-400">
+            Group {match.home_group}
+          </div>
+        )}
+      </div>
 
-                     <div className="flex items-center gap-3">
-                        {match.status === 'FT' ? (
-                           <span className="px-3 py-1 bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-bold rounded-full">Full Time</span>
-                        ) : (
-                           <span className="px-3 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold rounded-full">Upcoming</span>
-                        )}
-                        <button className="p-2 hover:bg-white/5 rounded-lg text-zinc-500 hover:text-white transition-colors">
-                           <MoreHorizontal className="w-5 h-5" />
-                        </button>
-                     </div>
-                  </div>
-
-                  {/* Artifacts / Saved Data */}
-                  <div className="px-6 py-4 bg-black/20 border-t border-white/5 flex gap-4">
-                     <div className="flex-1 grid grid-cols-3 gap-4">
-                        <div className="p-3 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 transition-all cursor-pointer group/card flex items-center gap-3">
-                           <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400 group-hover/card:bg-blue-500 group-hover/card:text-white transition-colors">
-                              <FileText className="w-4 h-4" />
-                           </div>
-                           <div>
-                              <div className="text-sm font-bold text-zinc-200">Match Report</div>
-                              <div className="text-[10px] text-zinc-500">PDF • 2.4 MB</div>
-                           </div>
-                           <Download className="w-4 h-4 text-zinc-600 ml-auto group-hover/card:text-white" />
-                        </div>
-
-                        <div className={`p-3 bg-white/5 rounded-xl border border-white/5 transition-all flex items-center gap-3 ${match.tacticsSaved ? 'hover:bg-white/10 cursor-pointer group/card' : 'opacity-50 cursor-not-allowed'}`}>
-                           <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400 group-hover/card:bg-purple-500 group-hover/card:text-white transition-colors">
-                              <Target className="w-4 h-4" />
-                           </div>
-                           <div>
-                              <div className="text-sm font-bold text-zinc-200">Tactical Setup</div>
-                              <div className="text-[10px] text-zinc-500">{match.tacticsSaved ? 'Saved in Studio' : 'Not Generated'}</div>
-                           </div>
-                           {match.tacticsSaved && <ArrowRight className="w-4 h-4 text-zinc-600 ml-auto group-hover/card:text-white" />}
-                        </div>
-
-                        <div className={`p-3 bg-white/5 rounded-xl border border-white/5 transition-all flex items-center gap-3 ${match.dataSaved ? 'hover:bg-white/10 cursor-pointer group/card' : 'opacity-50 cursor-not-allowed'}`}>
-                           <div className="p-2 bg-green-500/10 rounded-lg text-green-400 group-hover/card:bg-green-500 group-hover/card:text-white transition-colors">
-                              <Activity className="w-4 h-4" />
-                           </div>
-                           <div>
-                              <div className="text-sm font-bold text-zinc-200">Performance Data</div>
-                              <div className="text-[10px] text-zinc-500">{match.dataSaved ? 'Dataset Available' : 'No Data'}</div>
-                           </div>
-                           {match.dataSaved && <Download className="w-4 h-4 text-zinc-600 ml-auto group-hover/card:text-white" />}
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            ))}
-         </div>
+      {/* Full team names footnote */}
+      <div className="mt-auto px-6 pb-5 text-[10px] text-zinc-600 leading-relaxed border-t border-white/5 pt-4">
+        <div>{match.home_team} vs {match.away_team}</div>
       </div>
     </div>
   );
 }
 
-function ArrowRight({ className }: { className?: string }) {
+// ── Main Component ─────────────────────────────────────────────────────────────
+
+export default function CalendarView() {
+  const [matches, setMatches] = useState<WWCMatch[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [monthIdx, setMonthIdx] = useState(0);
+  const [stageFilter, setStageFilter] = useState<StageFilter>('All');
+  const [selectedMatch, setSelectedMatch] = useState<WWCMatch | null>(null);
+
+  useEffect(() => {
+    getWWCMatches().then(data => {
+      setMatches(data);
+      setLoading(false);
+    });
+  }, []);
+
+  const { year, month, label } = MONTHS[monthIdx];
+
+  const filteredMatches = useMemo(() => {
+    return matches.filter(m => {
+      const matchMonth = parseInt(m.match_date.slice(5, 7), 10);
+      const matchYear  = parseInt(m.match_date.slice(0, 4), 10);
+      if (matchYear !== year || matchMonth !== month) return false;
+      if (stageFilter !== 'All' && m.competition_stage !== stageFilter) return false;
+      return true;
+    });
+  }, [matches, year, month, stageFilter]);
+
+  /** Map from "YYYY-MM-DD" → WWCMatch[] */
+  const matchesByDate = useMemo(() => {
+    const map: Record<string, WWCMatch[]> = {};
+    for (const m of filteredMatches) {
+      if (!map[m.match_date]) map[m.match_date] = [];
+      map[m.match_date].push(m);
+    }
+    return map;
+  }, [filteredMatches]);
+
+  const totalDays = daysInMonth(year, month);
+  const startOffset = firstDayOfWeek(year, month);
+
   return (
-    <svg 
-      className={className} 
-      width="24" 
-      height="24" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    >
-      <path d="M5 12h14" />
-      <path d="m12 5 7 7-7 7" />
-    </svg>
+    <div className="flex h-[calc(100vh-140px)] gap-6">
+
+      {/* Left: Calendar */}
+      <div className="flex flex-col min-w-0 flex-1 bg-black/40 backdrop-blur-2xl rounded-3xl border border-white/5 overflow-hidden shadow-xl">
+
+        {/* Month nav */}
+        <div className="p-5 border-b border-white/5 flex items-center justify-between bg-white/[0.02] flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-[#00C2A8]/10 rounded-lg text-[#00C2A8]">
+              <CalendarIcon className="w-4 h-4" />
+            </div>
+            <span className="font-bold text-white">{label}</span>
+            <span className="text-xs text-zinc-500 ml-1">WWC 2023</span>
+          </div>
+          <div className="flex gap-1">
+            <button
+              disabled={monthIdx === 0}
+              onClick={() => { setMonthIdx(0); setSelectedMatch(null); }}
+              className="p-1.5 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              disabled={monthIdx === MONTHS.length - 1}
+              onClick={() => { setMonthIdx(1); setSelectedMatch(null); }}
+              className="p-1.5 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Stage filter pills */}
+        <div className="px-5 py-3 flex flex-wrap gap-2 border-b border-white/5 flex-shrink-0">
+          {STAGES.map(s => (
+            <button
+              key={s}
+              onClick={() => { setStageFilter(s); setSelectedMatch(null); }}
+              className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
+                stageFilter === s
+                  ? 'bg-[#00C2A8] text-black border-[#00C2A8] shadow-lg shadow-[#00C2A8]/25'
+                  : 'bg-white/5 text-zinc-400 border-white/10 hover:border-white/20 hover:text-white'
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
+        {/* Day-of-week headers */}
+        <div className="grid grid-cols-7 px-4 pt-3 pb-1 flex-shrink-0">
+          {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
+            <div key={d} className="text-center text-[10px] font-bold text-zinc-600 uppercase tracking-wider py-1">{d}</div>
+          ))}
+        </div>
+
+        {/* Calendar grid */}
+        <div className="flex-1 overflow-y-auto px-4 pb-4">
+          {loading ? (
+            <div className="grid grid-cols-7 gap-1">
+              {Array.from({ length: 35 }).map((_, i) => (
+                <Skeleton key={i} className="h-20" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-7 gap-1">
+              {/* Empty offset cells */}
+              {Array.from({ length: startOffset }).map((_, i) => (
+                <div key={`empty-${i}`} />
+              ))}
+
+              {/* Day cells */}
+              {Array.from({ length: totalDays }, (_, i) => i + 1).map(day => {
+                const dateStr = toDateStr(year, month, day);
+                const dayMatches = matchesByDate[dateStr] ?? [];
+                const hasMatch = dayMatches.length > 0;
+                const isToday = false; // tournament is historical
+
+                return (
+                  <div
+                    key={day}
+                    className={`min-h-[80px] rounded-xl p-1.5 border transition-colors ${
+                      hasMatch
+                        ? 'border-white/10 bg-white/[0.03]'
+                        : 'border-transparent'
+                    } ${isToday ? 'ring-1 ring-[#00C2A8]/50' : ''}`}
+                  >
+                    <div className={`text-[11px] font-semibold mb-1 px-0.5 ${hasMatch ? 'text-white' : 'text-zinc-600'}`}>
+                      {day}
+                    </div>
+                    <div className="space-y-0.5">
+                      {dayMatches.map(m => (
+                        <MatchBadge
+                          key={m.match_id}
+                          match={m}
+                          isSelected={selectedMatch?.match_id === m.match_id}
+                          onClick={() => setSelectedMatch(
+                            selectedMatch?.match_id === m.match_id ? null : m
+                          )}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Footer stats */}
+        <div className="px-5 py-3 border-t border-white/5 flex items-center gap-4 text-xs text-zinc-500 flex-shrink-0">
+          <span>{filteredMatches.length} match{filteredMatches.length !== 1 ? 'es' : ''} shown</span>
+          <span>·</span>
+          <span>{matches.length} total in tournament</span>
+        </div>
+      </div>
+
+      {/* Right: Detail panel */}
+      {selectedMatch ? (
+        <div className="w-80 flex-shrink-0">
+          <DetailPanel match={selectedMatch} onClose={() => setSelectedMatch(null)} />
+        </div>
+      ) : (
+        <div className="w-80 flex-shrink-0 flex items-center justify-center bg-black/20 rounded-3xl border border-white/5 border-dashed">
+          <div className="text-center text-zinc-600 px-6">
+            <CalendarIcon className="w-8 h-8 mx-auto mb-3 opacity-40" />
+            <p className="text-sm">Click a match badge<br />to see details</p>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

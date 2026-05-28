@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { getWWCMatches, getWWCLineup } from '../services/wwcData';
+import type { WWCMatch } from '../services/wwcData';
 import { 
   Users, 
   Search, 
@@ -49,54 +51,118 @@ interface PlayerDetail extends Player {
     market_value: string;
 }
 
-const TEAMS = ['Arsenal', 'Man City', 'Liverpool', 'Real Madrid', 'Bayern Munich'];
+// Populated from real WWC 2023 match data at runtime
+const stripWomens = (name: string) => name.replace(/\s*Women's\s*$/i, '').trim();
 
 export default function FormationAnalysis() {
   const [viewMode, setViewMode] = useState<ViewMode>('discovery');
-  const [selectedTeam, setSelectedTeam] = useState('Arsenal');
+  const [selectedTeam, setSelectedTeam] = useState('Spain');
   const [isTeamDropdownOpen, setIsTeamDropdownOpen] = useState(false);
   const [analysisMode, setAnalysisMode] = useState<AnalysisMode>('health');
   const [showLIM, setShowLIM] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  
-  // Mock Formation Data
-  const getFormation = (team: string): Player[] => {
-    if (team === 'Man City') {
-      return [
-        { id: '1', name: 'Ederson', position: 'GK', rating: 89, health: 94, x: 50, y: 90, team: 'Man City' },
-        { id: '2', name: 'Walker', position: 'RB', rating: 85, health: 88, x: 85, y: 75, team: 'Man City' },
-        { id: '3', name: 'Dias', position: 'CB', rating: 89, health: 96, x: 65, y: 80, team: 'Man City' },
-        { id: '4', name: 'Akanji', position: 'CB', rating: 84, health: 90, x: 35, y: 80, team: 'Man City' },
-        { id: '5', name: 'Gvardiol', position: 'LB', rating: 83, health: 85, x: 15, y: 75, team: 'Man City' },
-        { id: '6', name: 'Rodri', position: 'CDM', rating: 91, health: 99, x: 50, y: 60, team: 'Man City' },
-        { id: '7', name: 'De Bruyne', position: 'CAM', rating: 91, health: 97, x: 65, y: 40, team: 'Man City' },
-        { id: '8', name: 'Silva', position: 'CAM', rating: 88, health: 94, x: 35, y: 40, team: 'Man City' },
-        { id: '9', name: 'Foden', position: 'RW', rating: 87, health: 92, x: 85, y: 20, team: 'Man City' },
-        { id: '10', name: 'Haaland', position: 'ST', rating: 91, health: 88, x: 50, y: 15, team: 'Man City' },
-        { id: '11', name: 'Doku', position: 'LW', rating: 82, health: 78, x: 15, y: 20, team: 'Man City', isWeakLink: true }
-      ];
-    }
-    // Default Arsenal
-    return [
-      { id: '1', name: 'Raya', position: 'GK', rating: 85, health: 92, x: 50, y: 90, team: 'Arsenal' },
-      { id: '2', name: 'White', position: 'RB', rating: 84, health: 88, x: 85, y: 75, team: 'Arsenal' },
-      { id: '3', name: 'Saliba', position: 'CB', rating: 88, health: 95, x: 65, y: 80, team: 'Arsenal' },
-      { id: '4', name: 'Gabriel', position: 'CB', rating: 86, health: 94, x: 35, y: 80, team: 'Arsenal' },
-      { id: '5', name: 'Zinchenko', position: 'LB', rating: 82, health: 65, x: 15, y: 75, team: 'Arsenal', isWeakLink: true }, // Weak Link
-      { id: '6', name: 'Rice', position: 'CDM', rating: 89, health: 98, x: 50, y: 60, team: 'Arsenal' },
-      { id: '7', name: 'Odegaard', position: 'CAM', rating: 90, health: 96, x: 65, y: 40, team: 'Arsenal' },
-      { id: '8', name: 'Havertz', position: 'CAM', rating: 83, health: 78, x: 35, y: 40, team: 'Arsenal' },
-      { id: '9', name: 'Saka', position: 'RW', rating: 88, health: 91, x: 85, y: 20, team: 'Arsenal' },
-      { id: '10', name: 'Jesus', position: 'ST', rating: 84, health: 82, x: 50, y: 15, team: 'Arsenal' },
-      { id: '11', name: 'Martinelli', position: 'LW', rating: 85, health: 89, x: 15, y: 20, team: 'Arsenal' }
-    ];
+
+  // ── WWC 2023 data ────────────────────────────────────────────────────────────
+  const [TEAMS, setTEAMS] = useState<string[]>([]);
+  const [allMatches, setAllMatches] = useState<WWCMatch[]>([]);
+  const [formation, setFormation] = useState<Player[]>([]);
+  const [lineupLoading, setLineupLoading] = useState(false);
+  const matchesByTeam = useRef<Record<string, WWCMatch[]>>({});
+
+  // Position-to-xy mapping for pitch layout
+  const positionLayout: Record<string, { x: number; y: number; shortPos: string }> = {
+    Goalkeeper:                   { x: 50, y: 90, shortPos: 'GK' },
+    'Right Back':                 { x: 85, y: 75, shortPos: 'RB' },
+    'Right Center Back':          { x: 65, y: 80, shortPos: 'CB' },
+    'Center Back':                { x: 50, y: 80, shortPos: 'CB' },
+    'Left Center Back':           { x: 35, y: 80, shortPos: 'CB' },
+    'Left Back':                  { x: 15, y: 75, shortPos: 'LB' },
+    'Right Wing Back':            { x: 85, y: 65, shortPos: 'WB' },
+    'Left Wing Back':             { x: 15, y: 65, shortPos: 'WB' },
+    'Right Defensive Midfield':   { x: 65, y: 60, shortPos: 'DM' },
+    'Center Defensive Midfield':  { x: 50, y: 60, shortPos: 'CDM' },
+    'Left Defensive Midfield':    { x: 35, y: 60, shortPos: 'DM' },
+    'Right Center Midfield':      { x: 65, y: 45, shortPos: 'CM' },
+    'Center Midfield':            { x: 50, y: 45, shortPos: 'CM' },
+    'Left Center Midfield':       { x: 35, y: 45, shortPos: 'CM' },
+    'Right Attacking Midfield':   { x: 65, y: 30, shortPos: 'AM' },
+    'Center Attacking Midfield':  { x: 50, y: 30, shortPos: 'AM' },
+    'Left Attacking Midfield':    { x: 35, y: 30, shortPos: 'AM' },
+    'Right Wing':                 { x: 85, y: 25, shortPos: 'RW' },
+    'Left Wing':                  { x: 15, y: 25, shortPos: 'LW' },
+    'Right Center Forward':       { x: 65, y: 15, shortPos: 'CF' },
+    'Center Forward':             { x: 50, y: 15, shortPos: 'ST' },
+    'Left Center Forward':        { x: 35, y: 15, shortPos: 'CF' },
+    'Secondary Striker':          { x: 50, y: 20, shortPos: 'SS' },
   };
 
-  const [formation, setFormation] = useState<Player[]>(getFormation('Arsenal'));
-
+  // Load all matches once on mount
   useEffect(() => {
-    setFormation(getFormation(selectedTeam));
-  }, [selectedTeam]);
+    getWWCMatches().then(matches => {
+      setAllMatches(matches);
+      // Derive unique teams
+      const teamSet = new Set<string>();
+      const byTeam: Record<string, WWCMatch[]> = {};
+      matches.forEach(m => {
+        const home = stripWomens(m.home_team);
+        const away = stripWomens(m.away_team);
+        teamSet.add(home);
+        teamSet.add(away);
+        if (!byTeam[home]) byTeam[home] = [];
+        if (!byTeam[away]) byTeam[away] = [];
+        byTeam[home].push(m);
+        byTeam[away].push(m);
+      });
+      matchesByTeam.current = byTeam;
+      const sorted = Array.from(teamSet).sort();
+      setTEAMS(sorted);
+      // Default to Spain if available, else first team
+      if (!sorted.includes('Spain') && sorted.length > 0) {
+        setSelectedTeam(sorted[0]);
+      }
+    });
+  }, []);
+
+  // Fetch lineup whenever selectedTeam or allMatches change
+  useEffect(() => {
+    if (allMatches.length === 0) return;
+    const teamMatches = matchesByTeam.current[selectedTeam] ?? [];
+    const firstMatch = teamMatches[0];
+    if (!firstMatch) return;
+
+    setLineupLoading(true);
+    getWWCLineup(firstMatch.match_id).then(lineup => {
+      const starters = lineup
+        .filter(p => stripWomens(p.team) === selectedTeam && p.is_starter)
+        .slice(0, 11);
+
+      const usedPositions: Record<string, number> = {};
+      const mapped: Player[] = starters.map((p, idx) => {
+        const posKey = p.position in positionLayout ? p.position : 'Center Midfield';
+        // Offset duplicate positions slightly so tokens don't stack
+        usedPositions[posKey] = (usedPositions[posKey] ?? 0) + 1;
+        const offset = (usedPositions[posKey] - 1) * 10;
+        const { x, y, shortPos } = positionLayout[posKey];
+        // jersey_number used as rating proxy (clamped 1–99); health is a demo random 65–98
+        const rating = Math.min(99, Math.max(1, p.jersey_number || idx + 1));
+        const health = Math.floor(Math.random() * 34) + 65;
+        const displayName = p.player_nickname || p.player_name.split(' ').slice(-1)[0];
+        return {
+          id: String(p.player_id),
+          name: displayName,
+          position: shortPos,
+          rating,
+          health,
+          x: x + offset,
+          y,
+          team: selectedTeam,
+          isWeakLink: health < 72,
+        };
+      });
+      setFormation(mapped);
+      setLineupLoading(false);
+    });
+  }, [selectedTeam, allMatches]);
 
   const [suggestedPlayers, setSuggestedPlayers] = useState([
     { id: 's1', name: 'Theo Hernandez', position: 'LB', rating: 86, fitScore: 94, team: 'AC Milan', cost: '€65M' },
@@ -134,7 +200,9 @@ export default function FormationAnalysis() {
   const selectedDetail = selectedPlayer ? getPlayerDetail(selectedPlayer) : null;
 
   // Stats
-  const networkHealth = Math.round(formation.reduce((acc, p) => acc + p.health, 0) / formation.length);
+  const networkHealth = formation.length > 0
+    ? Math.round(formation.reduce((acc, p) => acc + p.health, 0) / formation.length)
+    : 0;
   const weakLinks = formation.filter(p => p.isWeakLink).length;
 
   const renderDiscovery = () => (
@@ -297,7 +365,7 @@ export default function FormationAnalysis() {
                 </div>
                 
                 {isTeamDropdownOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] z-[100] p-1.5 space-y-1 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] z-[100] p-1.5 space-y-1 overflow-y-auto max-h-64 animate-in fade-in zoom-in-95 duration-200">
                         {TEAMS.map(team => (
                             <div 
                                 key={team}
@@ -534,6 +602,12 @@ export default function FormationAnalysis() {
 
         {/* Pitch Render */}
         <div className="flex-1 relative overflow-hidden group perspective-1000 bg-[#050505]">
+           {/* Loading overlay */}
+           {lineupLoading && (
+             <div className="absolute inset-0 flex items-center justify-center z-30 bg-black/50 backdrop-blur-sm">
+               <div className="text-white text-sm font-bold animate-pulse uppercase tracking-widest">Loading Lineup...</div>
+             </div>
+           )}
            {/* Cyber Grid Pattern - Replaces Grass */}
            <div className="absolute inset-0 opacity-30" 
              style={{ 

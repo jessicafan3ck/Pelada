@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useContext } from 'react';
 import {
   ArrowRight, Star, Sparkles, Cpu, Box, BarChart2,
   Target, Layout, Download, Activity, Shield, Calendar,
 } from 'lucide-react';
+import { DataContext } from '../context/DataContext';
 
 interface DashboardProps {
   onOpenAgent: () => void;
@@ -74,15 +75,30 @@ function useCountdown() {
   return t;
 }
 
-const OTHER_MATCHES = [
-  { home: 'Spain',     away: 'Japan',    group: 'Group B', date: 'Jul 26', homeColor: '#ef4444', awayColor: '#3b82f6' },
-  { home: 'England',   away: 'Germany',  group: 'Group C', date: 'Jul 27', homeColor: '#f9fafb', awayColor: '#1d4ed8' },
-  { home: 'Argentina', away: 'USA',      group: 'Group D', date: 'Jul 28', homeColor: '#60a5fa', awayColor: '#f87171' },
-];
+const TEAM_COLOR: Record<string, string> = {
+  Spain: '#ef4444', England: '#f9fafb', Brazil: '#22c55e', Australia: '#fbbf24',
+  USA: '#3b82f6', Sweden: '#3b82f6', Japan: '#ef4444', France: '#2563eb',
+  Germany: '#71717a', Netherlands: '#f97316', Colombia: '#facc15', Norway: '#ef4444',
+  Canada: '#ef4444', Argentina: '#60a5fa', Jamaica: '#22c55e', Denmark: '#ef4444',
+  China: '#ef4444', Morocco: '#16a34a', Switzerland: '#ef4444', Nigeria: '#16a34a',
+};
+const teamColor = (t: string) => TEAM_COLOR[t] ?? '#a78bfa';
+
+const strip = (t: string) => t.replace(" Women's", '');
 
 export default function Dashboard({ onOpenAgent, onNavigate }: DashboardProps) {
   const { days, hours, minutes, seconds } = useCountdown();
   const [activeCategory, setActiveCategory] = useState<Category>('all');
+  const { wwcMatches } = useContext(DataContext);
+
+  const featured = useMemo(
+    () => wwcMatches.find(m => m.stage === 'Final') ?? wwcMatches[wwcMatches.length - 1] ?? null,
+    [wwcMatches],
+  );
+  const otherMatches = useMemo(
+    () => wwcMatches.filter(m => m.stage === 'Semi-finals').slice(0, 3),
+    [wwcMatches],
+  );
 
   const filtered = activeCategory === 'all'
     ? ARTIFACTS
@@ -155,9 +171,12 @@ export default function Dashboard({ onOpenAgent, onNavigate }: DashboardProps) {
             {/* Header */}
             <div className="px-8 pt-8 pb-6 border-b border-white/5 flex justify-between items-center relative z-10 shrink-0">
               <div>
-                <h2 className="text-2xl font-bold text-white tracking-tight">WWC 2027 · Group Stage</h2>
+                <h2 className="text-2xl font-bold text-white tracking-tight">
+                  {featured ? `WWC 2023 · ${featured.stage}` : 'WWC 2023'}
+                </h2>
                 <p className="text-sm text-zinc-500 mt-1 flex items-center gap-2">
-                  <Calendar className="w-3.5 h-3.5" /> Opening round · Jul 24 – Aug 12
+                  <Calendar className="w-3.5 h-3.5" />
+                  {featured ? `${featured.date}${featured.stadium ? ' · ' + featured.stadium : ''}` : 'Jul 20 – Aug 20, 2023'}
                 </p>
               </div>
               <button
@@ -169,81 +188,73 @@ export default function Dashboard({ onOpenAgent, onNavigate }: DashboardProps) {
             </div>
 
             {/* Featured match face-off */}
-            <div
-              onClick={() => onNavigate('simulation')}
-              className="relative z-10 mx-6 my-5 bg-gradient-to-r from-zinc-900/50 to-black/50 rounded-2xl border border-white/10 hover:border-white/20 transition-all cursor-pointer group overflow-hidden"
-            >
-              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent pointer-events-none" />
-              <div className="p-8 flex items-center justify-between">
-
-                {/* Home — Brazil */}
-                <div className="flex flex-col items-center gap-4 w-1/3">
-                  <div
-                    className="w-20 h-20 rounded-2xl flex items-center justify-center border border-white/10 group-hover:scale-105 transition-transform"
-                    style={{ background: 'linear-gradient(135deg, #14532d, #065f46)', boxShadow: '0 0 30px rgba(34,197,94,0.25)' }}
-                  >
-                    <Shield className="w-10 h-10 text-white" />
+            {featured ? (
+              <div
+                onClick={() => onNavigate('simulation')}
+                className="relative z-10 mx-6 my-5 bg-gradient-to-r from-zinc-900/50 to-black/50 rounded-2xl border border-white/10 hover:border-white/20 transition-all cursor-pointer group overflow-hidden"
+              >
+                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent pointer-events-none" />
+                <div className="p-8 flex items-center justify-between">
+                  {/* Home */}
+                  <div className="flex flex-col items-center gap-4 w-1/3">
+                    <div className="w-20 h-20 rounded-2xl flex items-center justify-center border border-white/10 group-hover:scale-105 transition-transform"
+                      style={{ background: `linear-gradient(135deg, ${teamColor(strip(featured.home_team))}22, ${teamColor(strip(featured.home_team))}88)`, boxShadow: `0 0 30px ${teamColor(strip(featured.home_team))}40` }}>
+                      <Shield className="w-10 h-10 text-white" />
+                    </div>
+                    <div className="text-center">
+                      <h3 className="text-xl font-bold text-white">{strip(featured.home_team)}</h3>
+                      <span className="text-xs text-zinc-500 font-mono tracking-wider">HOME</span>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <h3 className="text-xl font-bold text-white">Brazil</h3>
-                    <span className="text-xs text-zinc-500 font-mono tracking-wider">HOME</span>
+                  {/* Centre */}
+                  <div className="flex flex-col items-center gap-3 w-1/3">
+                    <div className="text-3xl font-black text-white tabular-nums">
+                      {featured.home_score}–{featured.away_score}
+                    </div>
+                    <div className="text-xs font-bold text-zinc-400 bg-white/10 px-3 py-1 rounded-full border border-white/10">
+                      {featured.stage}
+                    </div>
+                    <div className="flex gap-3 mt-1">
+                      <button onClick={e => { e.stopPropagation(); onNavigate('simulation'); }}
+                        className="px-4 py-2 bg-white text-black text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-zinc-200 transition-colors shadow-lg">
+                        Simulate
+                      </button>
+                      <button onClick={e => { e.stopPropagation(); onNavigate('lineup'); }}
+                        className="px-4 py-2 bg-white/10 text-white text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-white/20 transition-colors border border-white/10">
+                        Lineup
+                      </button>
+                    </div>
                   </div>
-                </div>
-
-                {/* Centre info */}
-                <div className="flex flex-col items-center gap-3 w-1/3">
-                  <div className="text-xs font-bold text-zinc-400 bg-white/10 px-4 py-1.5 rounded-full border border-white/10">
-                    Group A · Jul 24
-                  </div>
-                  <span className="text-[10px] text-zinc-600 text-center">Estádio Nacional · Brasília</span>
-                  <div className="flex gap-3 mt-1">
-                    <button
-                      onClick={e => { e.stopPropagation(); onNavigate('simulation'); }}
-                      className="px-4 py-2 bg-white text-black text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-zinc-200 transition-colors shadow-lg"
-                    >
-                      Simulate
-                    </button>
-                    <button
-                      onClick={e => { e.stopPropagation(); onNavigate('lineup'); }}
-                      className="px-4 py-2 bg-white/10 text-white text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-white/20 transition-colors border border-white/10"
-                    >
-                      Lineup
-                    </button>
-                  </div>
-                </div>
-
-                {/* Away — Colombia */}
-                <div className="flex flex-col items-center gap-4 w-1/3">
-                  <div
-                    className="w-20 h-20 rounded-2xl flex items-center justify-center border border-white/10 group-hover:scale-105 transition-transform"
-                    style={{ background: 'linear-gradient(135deg, #78350f, #92400e)', boxShadow: '0 0 30px rgba(245,158,11,0.25)' }}
-                  >
-                    <Shield className="w-10 h-10 text-white" />
-                  </div>
-                  <div className="text-center">
-                    <h3 className="text-xl font-bold text-white">Colombia</h3>
-                    <span className="text-xs text-zinc-500 font-mono tracking-wider">AWAY</span>
+                  {/* Away */}
+                  <div className="flex flex-col items-center gap-4 w-1/3">
+                    <div className="w-20 h-20 rounded-2xl flex items-center justify-center border border-white/10 group-hover:scale-105 transition-transform"
+                      style={{ background: `linear-gradient(135deg, ${teamColor(strip(featured.away_team))}22, ${teamColor(strip(featured.away_team))}88)`, boxShadow: `0 0 30px ${teamColor(strip(featured.away_team))}40` }}>
+                      <Shield className="w-10 h-10 text-white" />
+                    </div>
+                    <div className="text-center">
+                      <h3 className="text-xl font-bold text-white">{strip(featured.away_team)}</h3>
+                      <span className="text-xs text-zinc-500 font-mono tracking-wider">AWAY</span>
+                    </div>
                   </div>
                 </div>
-
               </div>
-            </div>
+            ) : (
+              <div className="mx-6 my-5 h-32 rounded-2xl bg-white/[0.02] border border-white/5 animate-pulse" />
+            )}
 
             {/* Other matches */}
             <div className="px-6 pb-6 grid grid-cols-3 gap-3 relative z-10 shrink-0">
-              {OTHER_MATCHES.map((m, i) => (
-                <div
-                  key={i}
-                  onClick={() => onNavigate('simulation')}
+              {(otherMatches.length > 0 ? otherMatches : wwcMatches.slice(0, 3)).map((m, i) => (
+                <div key={i} onClick={() => onNavigate('simulation')}
                   className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 hover:bg-white/[0.06] cursor-pointer transition-all"
                 >
-                  <div className="text-[9px] text-zinc-600 font-bold uppercase tracking-wider">{m.group} · {m.date}</div>
+                  <div className="text-[9px] text-zinc-600 font-bold uppercase tracking-wider">{m.stage} · {m.date}</div>
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full shrink-0" style={{ background: m.homeColor }} />
-                    <span className="text-[11px] font-bold text-white">{m.home}</span>
-                    <span className="text-[10px] text-zinc-600">vs</span>
-                    <span className="text-[11px] font-bold text-white">{m.away}</span>
-                    <div className="w-2 h-2 rounded-full shrink-0" style={{ background: m.awayColor }} />
+                    <div className="w-2 h-2 rounded-full shrink-0" style={{ background: teamColor(strip(m.home_team)) }} />
+                    <span className="text-[11px] font-bold text-white">{strip(m.home_team)}</span>
+                    <span className="text-[10px] text-zinc-600">{m.home_score}–{m.away_score}</span>
+                    <span className="text-[11px] font-bold text-white">{strip(m.away_team)}</span>
+                    <div className="w-2 h-2 rounded-full shrink-0" style={{ background: teamColor(strip(m.away_team)) }} />
                   </div>
                 </div>
               ))}

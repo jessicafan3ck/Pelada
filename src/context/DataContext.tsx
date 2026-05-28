@@ -1,6 +1,21 @@
-import React, { createContext, useState, useEffect } from 'react';
-import { parseCSV, num } from '../utils/csvParser';
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { getWWCMatches, getWWCLineup, getWWCTournamentPlayerStats } from '../services/wwcData';
+import type { WWCMatch, TournamentPlayerStat } from '../services/wwcData';
 
+// Legacy shape for LineupView/ContextPanel (already in use across the codebase)
+export interface LineupPlayer {
+  id: number;
+  name: string;
+  nickname: string;
+  jersey: number;
+  position: string;
+  position_id: number;
+  country: string;
+  x: number;
+  y: number;
+}
+
+// Legacy Event type kept for LangGraph tool output compatibility
 export interface Event {
   match_id: number;
   team_name: string;
@@ -18,18 +33,6 @@ export interface Event {
   xg?: number;
 }
 
-export interface LineupPlayer {
-  id: number;
-  name: string;
-  nickname: string;
-  jersey: number;
-  position: string;
-  position_id: number;
-  country: string;
-  x: number;
-  y: number;
-}
-
 export interface MatchMeta {
   match_id: number;
   home_team: string;
@@ -38,206 +41,157 @@ export interface MatchMeta {
   stage: string;
   home_score: number;
   away_score: number;
+  stadium?: string;
+  home_group?: string;
+  away_group?: string;
+  kick_off?: string;
 }
 
-export interface TeamStat {
-  team_name: string;
-  common_name: string;
-  league: string;
-  country: string;
-  season: string;
-  league_position: number;
-  matches_played: number;
-  wins: number;
-  draws: number;
-  losses: number;
-  goals_scored: number;
-  goals_conceded: number;
-  points_per_game: number;
-  average_possession: number;
-  shots: number;
-  shots_on_target: number;
-  corners_total: number;
-  xg_for: number;
-  xg_against: number;
+// ── Pitch position helpers for LineupView ─────────────────────────────────────
+const POSITION_COORDS: Record<string, { x: number; y: number }> = {
+  'Goalkeeper':             { x: 50, y: 92 },
+  'Right Back':             { x: 80, y: 75 },
+  'Right Center Back':      { x: 65, y: 82 },
+  'Center Back':            { x: 50, y: 82 },
+  'Left Center Back':       { x: 35, y: 82 },
+  'Left Back':              { x: 20, y: 75 },
+  'Right Wing Back':        { x: 85, y: 62 },
+  'Left Wing Back':         { x: 15, y: 62 },
+  'Right Defensive Midfield':{ x: 65, y: 65 },
+  'Center Defensive Midfield':{ x: 50, y: 65 },
+  'Left Defensive Midfield':{ x: 35, y: 65 },
+  'Right Midfield':         { x: 78, y: 52 },
+  'Center Midfield':        { x: 50, y: 52 },
+  'Left Midfield':          { x: 22, y: 52 },
+  'Right Center Midfield':  { x: 65, y: 52 },
+  'Left Center Midfield':   { x: 35, y: 52 },
+  'Right Attacking Midfield':{ x: 72, y: 38 },
+  'Center Attacking Midfield':{ x: 50, y: 38 },
+  'Left Attacking Midfield':{ x: 28, y: 38 },
+  'Right Wing':             { x: 82, y: 30 },
+  'Left Wing':              { x: 18, y: 30 },
+  'Right Center Forward':   { x: 65, y: 22 },
+  'Center Forward':         { x: 50, y: 20 },
+  'Left Center Forward':    { x: 35, y: 22 },
+  'Secondary Striker':      { x: 50, y: 30 },
+};
+
+function posCoords(position: string, idx: number): { x: number; y: number } {
+  if (POSITION_COORDS[position]) return POSITION_COORDS[position];
+  // fallback grid
+  const row = Math.floor(idx / 4);
+  const col = idx % 4;
+  return { x: 20 + col * 22, y: 85 - row * 18 };
 }
 
-export interface PlayerStat {
-  full_name: string;
-  age: number;
-  league: string;
-  season: string;
-  position: string;
-  club: string;
-  nationality: string;
-  minutes_played: number;
-  appearances: number;
-  goals: number;
-  assists: number;
-  yellow_cards: number;
-  red_cards: number;
+function wwcMatchToMeta(m: WWCMatch): MatchMeta {
+  return {
+    match_id:   m.match_id,
+    home_team:  m.home_team,
+    away_team:  m.away_team,
+    date:       m.match_date,
+    stage:      m.competition_stage,
+    home_score: m.home_score,
+    away_score: m.away_score,
+    stadium:    m.stadium,
+    home_group: m.home_group,
+    away_group: m.away_group,
+    kick_off:   m.kick_off,
+  };
 }
+
+// ── Context type ──────────────────────────────────────────────────────────────
 
 interface DataContextType {
   events: Event[];
   setEvents: (events: Event[]) => void;
   matchMeta: MatchMeta[];
+  wwcMatches: WWCMatch[];
   lineups: Record<number, Record<string, LineupPlayer[]>>;
   selectedMatch: number | null;
   setSelectedMatch: (id: number | null) => void;
-  teamStats: TeamStat[];
-  playerStats: PlayerStat[];
-  selectedLeague: string;
-  setSelectedLeague: (l: string) => void;
-  availableLeagues: string[];
+  tournamentStats: TournamentPlayerStat[];
   messages: any[];
   setMessages: React.Dispatch<React.SetStateAction<any[]>>;
   sessionId: string;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
   sendLangGraphQuery: (query: string, toolCall?: string, toolArgs?: any) => Promise<any>;
+  // Legacy compat
+  teamStats: any[];
+  playerStats: any[];
+  selectedLeague: string;
+  setSelectedLeague: (l: string) => void;
+  availableLeagues: string[];
 }
 
 export const DataContext = createContext<DataContextType>({
-  events: [],
-  setEvents: () => {},
-  matchMeta: [],
+  events: [], setEvents: () => {},
+  matchMeta: [], wwcMatches: [],
   lineups: {},
-  selectedMatch: null,
-  setSelectedMatch: () => {},
-  teamStats: [],
-  playerStats: [],
-  selectedLeague: 'All',
-  setSelectedLeague: () => {},
-  availableLeagues: [],
-  messages: [],
-  setMessages: () => {},
+  selectedMatch: null, setSelectedMatch: () => {},
+  tournamentStats: [],
+  messages: [], setMessages: () => {},
   sessionId: 'default-session',
-  isLoading: false,
-  setIsLoading: () => {},
+  isLoading: false, setIsLoading: () => {},
   sendLangGraphQuery: async () => {},
+  teamStats: [], playerStats: [],
+  selectedLeague: 'All', setSelectedLeague: () => {},
+  availableLeagues: [],
 });
 
-const TEAM_STAT_FILES = [
-  { file: '/data/ref/teams-epl-24-25.csv', league: 'Premier League' },
-  { file: '/data/ref/teams-laliga-24-25.csv', league: 'La Liga' },
-  { file: '/data/ref/teams-bundesliga-24-25.csv', league: 'Bundesliga' },
-  { file: '/data/ref/teams-seriea-24-25.csv', league: 'Serie A' },
-  { file: '/data/ref/teams-ligue1-24-25.csv', league: 'Ligue 1' },
-  { file: '/data/ref/teams-cl-24-25.csv', league: 'Champions League' },
-];
+export const useData = () => useContext(DataContext);
 
-const PLAYER_STAT_FILES = [
-  { file: '/data/ref/players-epl-24-25.csv', league: 'Premier League' },
-  { file: '/data/ref/players-laliga-24-25.csv', league: 'La Liga' },
-  { file: '/data/ref/players-bundesliga-24-25.csv', league: 'Bundesliga' },
-  { file: '/data/ref/players-cl-24-25.csv', league: 'Champions League' },
-];
-
-async function loadStatsBombEvents(): Promise<{ events: Event[]; matches: MatchMeta[]; lineups: Record<number, Record<string, LineupPlayer[]>> }> {
-  try {
-    const resp = await fetch('/data/statsbomb/wc2022.json');
-    if (!resp.ok) throw new Error('StatsBomb data not found');
-    const data = await resp.json();
-    return {
-      events: data.events as Event[],
-      matches: data.matches as MatchMeta[],
-      lineups: data.lineups ?? {},
-    };
-  } catch {
-    return { events: [], matches: [], lineups: {} };
-  }
-}
-
-async function loadTeamStats(): Promise<TeamStat[]> {
-  const all: TeamStat[] = [];
-  await Promise.all(TEAM_STAT_FILES.map(async ({ file, league }) => {
-    try {
-      const resp = await fetch(file);
-      if (!resp.ok) return;
-      const rows = parseCSV(await resp.text());
-      for (const r of rows) {
-        if (!r.team_name) continue;
-        all.push({
-          team_name: r.team_name,
-          common_name: r.common_name || r.team_name,
-          league,
-          country: r.country || '',
-          season: r.season || '2024/2025',
-          league_position: num(r.league_position),
-          matches_played: num(r.matches_played),
-          wins: num(r.wins),
-          draws: num(r.draws),
-          losses: num(r.losses),
-          goals_scored: num(r.goals_scored),
-          goals_conceded: num(r.goals_conceded),
-          points_per_game: num(r.points_per_game),
-          average_possession: num(r.average_possession),
-          shots: num(r.shots),
-          shots_on_target: num(r.shots_on_target),
-          corners_total: num(r.corners_total),
-          xg_for: num(r.xg_for_avg_overall),
-          xg_against: num(r.xg_against_avg_overall),
-        });
-      }
-    } catch { /* silently skip */ }
-  }));
-  return all;
-}
-
-async function loadPlayerStats(): Promise<PlayerStat[]> {
-  const all: PlayerStat[] = [];
-  await Promise.all(PLAYER_STAT_FILES.map(async ({ file, league }) => {
-    try {
-      const resp = await fetch(file);
-      if (!resp.ok) return;
-      const rows = parseCSV(await resp.text());
-      for (const r of rows) {
-        if (!r.full_name || num(r.minutes_played_overall) === 0) continue;
-        all.push({
-          full_name: r.full_name,
-          age: num(r.age),
-          league,
-          season: r.season || '2024/2025',
-          position: r.position || '',
-          club: r['Current Club'] || '',
-          nationality: r.nationality || '',
-          minutes_played: num(r.minutes_played_overall),
-          appearances: num(r.appearances_overall),
-          goals: num(r.goals_overall),
-          assists: num(r.assists_overall),
-          yellow_cards: num(r.yellow_cards_overall),
-          red_cards: num(r.red_cards_overall),
-        });
-      }
-    } catch { /* silently skip */ }
-  }));
-  return all;
-}
+// ── Provider ──────────────────────────────────────────────────────────────────
 
 export const DataContextProvider = ({ children }: { children: React.ReactNode }) => {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [matchMeta, setMatchMeta] = useState<MatchMeta[]>([]);
-  const [lineups, setLineups] = useState<Record<number, Record<string, LineupPlayer[]>>>({});
-  const [selectedMatch, setSelectedMatch] = useState<number | null>(null);
-  const [teamStats, setTeamStats] = useState<TeamStat[]>([]);
-  const [playerStats, setPlayerStats] = useState<PlayerStat[]>([]);
-  const [selectedLeague, setSelectedLeague] = useState<string>('All');
-  const [messages, setMessages] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [sessionId] = useState('session_' + Math.random().toString(36).substring(2, 9));
+  const [events, setEvents]           = useState<Event[]>([]);
+  const [wwcMatches, setWwcMatches]   = useState<WWCMatch[]>([]);
+  const [matchMeta, setMatchMeta]     = useState<MatchMeta[]>([]);
+  const [lineups, setLineups]         = useState<Record<number, Record<string, LineupPlayer[]>>>({});
+  const [selectedMatch, _setSelected] = useState<number | null>(null);
+  const [tournamentStats, setTournamentStats] = useState<TournamentPlayerStat[]>([]);
+  const [messages, setMessages]       = useState<any[]>([]);
+  const [isLoading, setIsLoading]     = useState(false);
+  const [sessionId]                   = useState('session_' + Math.random().toString(36).slice(2, 9));
 
+  // Startup: load all matches + tournament player stats
   useEffect(() => {
-    loadStatsBombEvents().then(({ events: evs, matches, lineups: lus }) => {
-      setEvents(evs);
-      setMatchMeta(matches);
-      setLineups(lus);
+    getWWCMatches().then(matches => {
+      setWwcMatches(matches);
+      setMatchMeta(matches.map(wwcMatchToMeta));
+      // Auto-select the opening match
+      if (matches.length > 0) {
+        _setSelected(matches[0].match_id);
+      }
     });
-    loadTeamStats().then(setTeamStats);
-    loadPlayerStats().then(setPlayerStats);
+    getWWCTournamentPlayerStats().then(setTournamentStats);
   }, []);
 
-  const availableLeagues = ['All', ...Array.from(new Set(teamStats.map(t => t.league))).sort()];
+  // When selected match changes, load its lineups
+  const setSelectedMatch = (id: number | null) => {
+    _setSelected(id);
+    if (!id) return;
+    if (lineups[id]) return; // already cached
+    getWWCLineup(id).then(players => {
+      const byTeam: Record<string, LineupPlayer[]> = {};
+      for (const p of players) {
+        if (!byTeam[p.team]) byTeam[p.team] = [];
+        byTeam[p.team].push({
+          id:          p.player_id,
+          name:        p.player_name,
+          nickname:    p.player_nickname ?? p.player_name,
+          jersey:      p.jersey_number,
+          position:    p.position,
+          position_id: p.position_id ?? 0,
+          country:     p.country,
+          x:           posCoords(p.position, byTeam[p.team].length).x,
+          y:           posCoords(p.position, byTeam[p.team].length - 1).y,
+        });
+      }
+      setLineups(prev => ({ ...prev, [id]: byTeam }));
+    });
+  };
 
   const sendLangGraphQuery = async (query: string, toolCall?: string, toolArgs?: any) => {
     try {
@@ -249,17 +203,17 @@ export const DataContextProvider = ({ children }: { children: React.ReactNode })
           session_id: sessionId,
           tool_call: toolCall,
           tool_args: toolArgs,
-          reinject: false
+          reinject: false,
         }),
       });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return await response.json();
-    } catch (error) {
-      console.error('LangGraph query error:', error);
+    } catch (err) {
+      console.error('LangGraph error:', err);
       return {
-        final_response: 'Backend not available. Showing mock visualization.',
-        tool_output: { events: events.slice(0, 50) },
-        visualization_type: null
+        final_response: 'Backend not available.',
+        tool_output: { events: [] },
+        visualization_type: null,
       };
     }
   };
@@ -267,14 +221,18 @@ export const DataContextProvider = ({ children }: { children: React.ReactNode })
   return (
     <DataContext.Provider value={{
       events, setEvents,
-      matchMeta, lineups, selectedMatch, setSelectedMatch,
-      teamStats, playerStats,
-      selectedLeague, setSelectedLeague,
-      availableLeagues,
+      matchMeta, wwcMatches,
+      lineups,
+      selectedMatch, setSelectedMatch,
+      tournamentStats,
       messages, setMessages,
       sessionId,
       isLoading, setIsLoading,
       sendLangGraphQuery,
+      // legacy compat stubs
+      teamStats: [], playerStats: [],
+      selectedLeague: 'All', setSelectedLeague: () => {},
+      availableLeagues: [],
     }}>
       {children}
     </DataContext.Provider>

@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getWWCMatches, getWWCLineup } from '../services/wwcData';
+import type { WWCMatch, WWCLineupPlayer } from '../services/wwcData';
 import { 
   Play, 
   Save, 
@@ -55,30 +57,127 @@ export default function TacticsView() {
     setShowAddBenchmark(false);
   };
   
-  const [homeTeam, setHomeTeam] = useState('Man City');
-  const [awayTeam, setAwayTeam] = useState('Liverpool');
+  // ── WWC 2023 data state ────────────────────────────────────────────────────
+  const stripWomens = (name: string) => name.replace(/\s*Women's\s*$/i, '').trim();
 
-  const teams = ['Man City', 'Liverpool', 'Arsenal', 'Real Madrid', 'Bayern', 'Inter Miami'];
+  const [allMatches, setAllMatches] = useState<WWCMatch[]>([]);
+  const [teams, setTeams] = useState<string[]>([]);
+  const [homeTeam, setHomeTeam] = useState('Spain');
+  const [awayTeam, setAwayTeam] = useState('England');
+  const [upcomingMatches, setUpcomingMatches] = useState<
+    { id: number; home: string; away: string; date: string; competition: string }[]
+  >([]);
+  const [players, setPlayers] = useState<
+    { id: number; name: string; x: number; y: number; role: string; color: string }[]
+  >([]);
+  const [lineupLoading, setLineupLoading] = useState(false);
 
-  const upcomingMatches = [
-    { id: 1, home: 'Man City', away: 'Bayern', date: 'Today, 20:00', competition: 'UCL' },
-    { id: 2, home: 'Liverpool', away: 'Chelsea', date: 'Sat, 17:30', competition: 'PL' },
-    { id: 3, home: 'Real Madrid', away: 'Barcelona', date: 'Sun, 20:00', competition: 'La Liga' },
-  ];
-  
-  const players = [
-    { id: 1, name: 'GK', x: 50, y: 90, role: 'GK', color: 'bg-yellow-500 shadow-[0_0_15px_#eab308]' },
-    { id: 2, name: 'LB', x: 15, y: 75, role: 'WB', color: 'bg-blue-600 shadow-[0_0_15px_#2563eb]' },
-    { id: 3, name: 'CB', x: 35, y: 80, role: 'CD', color: 'bg-blue-600 shadow-[0_0_15px_#2563eb]' },
-    { id: 4, name: 'CB', x: 65, y: 80, role: 'CD', color: 'bg-blue-600 shadow-[0_0_15px_#2563eb]' },
-    { id: 5, name: 'RB', x: 85, y: 75, role: 'WB', color: 'bg-blue-600 shadow-[0_0_15px_#2563eb]' },
-    { id: 6, name: 'DM', x: 50, y: 60, role: 'DLP', color: 'bg-blue-600 shadow-[0_0_15px_#2563eb]' },
-    { id: 8, name: 'CM', x: 35, y: 45, role: 'B2B', color: 'bg-blue-600 shadow-[0_0_15px_#2563eb]' },
-    { id: 10, name: 'AM', x: 65, y: 45, role: 'AP', color: 'bg-blue-600 shadow-[0_0_15px_#2563eb]' },
-    { id: 7, name: 'LW', x: 15, y: 25, role: 'IW', color: 'bg-blue-600 shadow-[0_0_15px_#2563eb]' },
-    { id: 9, name: 'ST', x: 50, y: 15, role: 'AF', color: 'bg-blue-600 shadow-[0_0_15px_#2563eb]' },
-    { id: 11, name: 'RW', x: 85, y: 25, role: 'W', color: 'bg-blue-600 shadow-[0_0_15px_#2563eb]' },
-  ];
+  // Position-to-xy mapping for pitch layout
+  const positionLayout: Record<string, { x: number; y: number }> = {
+    Goalkeeper:              { x: 50, y: 90 },
+    'Right Back':            { x: 85, y: 75 },
+    'Right Center Back':     { x: 65, y: 80 },
+    'Center Back':           { x: 50, y: 80 },
+    'Left Center Back':      { x: 35, y: 80 },
+    'Left Back':             { x: 15, y: 75 },
+    'Right Wing Back':       { x: 85, y: 65 },
+    'Left Wing Back':        { x: 15, y: 65 },
+    'Right Defensive Midfield': { x: 65, y: 60 },
+    'Center Defensive Midfield': { x: 50, y: 60 },
+    'Left Defensive Midfield':  { x: 35, y: 60 },
+    'Right Center Midfield': { x: 65, y: 45 },
+    'Center Midfield':       { x: 50, y: 45 },
+    'Left Center Midfield':  { x: 35, y: 45 },
+    'Right Attacking Midfield': { x: 65, y: 30 },
+    'Center Attacking Midfield': { x: 50, y: 30 },
+    'Left Attacking Midfield':  { x: 35, y: 30 },
+    'Right Wing':            { x: 85, y: 25 },
+    'Left Wing':             { x: 15, y: 25 },
+    'Right Center Forward':  { x: 65, y: 15 },
+    'Center Forward':        { x: 50, y: 15 },
+    'Left Center Forward':   { x: 35, y: 15 },
+    'Secondary Striker':     { x: 50, y: 20 },
+  };
+
+  const positionShorthand: Record<string, string> = {
+    Goalkeeper: 'GK',
+    'Right Back': 'RB', 'Left Back': 'LB',
+    'Right Center Back': 'CB', 'Left Center Back': 'CB', 'Center Back': 'CB',
+    'Right Wing Back': 'WB', 'Left Wing Back': 'WB',
+    'Center Defensive Midfield': 'CDM', 'Right Defensive Midfield': 'DM', 'Left Defensive Midfield': 'DM',
+    'Right Center Midfield': 'CM', 'Center Midfield': 'CM', 'Left Center Midfield': 'CM',
+    'Right Attacking Midfield': 'AM', 'Center Attacking Midfield': 'AM', 'Left Attacking Midfield': 'AM',
+    'Right Wing': 'RW', 'Left Wing': 'LW',
+    'Right Center Forward': 'CF', 'Left Center Forward': 'CF', 'Center Forward': 'ST',
+    'Secondary Striker': 'SS',
+  };
+
+  const lineupToPlayers = (lineup: WWCLineupPlayer[]) => {
+    const starters = lineup.filter(p => p.is_starter).slice(0, 11);
+    return starters.map((p, idx) => {
+      const pos = positionLayout[p.position] ?? { x: 50, y: 50 };
+      const isGK = p.position === 'Goalkeeper';
+      return {
+        id: p.jersey_number || idx + 1,
+        name: p.player_nickname || p.player_name.split(' ').pop() || p.player_name,
+        x: pos.x,
+        y: pos.y,
+        role: positionShorthand[p.position] ?? p.position.split(' ').map(w => w[0]).join(''),
+        color: isGK
+          ? 'bg-yellow-500 shadow-[0_0_15px_#eab308]'
+          : 'bg-blue-600 shadow-[0_0_15px_#2563eb]',
+      };
+    });
+  };
+
+  // Fetch all matches once on mount
+  useEffect(() => {
+    getWWCMatches().then(matches => {
+      setAllMatches(matches);
+      // Derive unique team names
+      const teamSet = new Set<string>();
+      matches.forEach(m => {
+        teamSet.add(stripWomens(m.home_team));
+        teamSet.add(stripWomens(m.away_team));
+      });
+      const sorted = Array.from(teamSet).sort();
+      setTeams(sorted);
+      if (sorted.length > 0 && !sorted.includes('Spain')) {
+        setHomeTeam(sorted[0]);
+        setAwayTeam(sorted[1] ?? sorted[0]);
+      }
+    });
+  }, []);
+
+  // Update upcoming matches and lineup when homeTeam changes
+  useEffect(() => {
+    if (allMatches.length === 0) return;
+
+    // Latest 3 matches involving homeTeam (by date desc)
+    const teamMatches = allMatches.filter(
+      m => stripWomens(m.home_team) === homeTeam || stripWomens(m.away_team) === homeTeam
+    );
+    const latest3 = [...teamMatches].reverse().slice(0, 3);
+    setUpcomingMatches(
+      latest3.map(m => ({
+        id: m.match_id,
+        home: stripWomens(m.home_team),
+        away: stripWomens(m.away_team),
+        date: new Date(m.match_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+        competition: m.competition_stage,
+      }))
+    );
+
+    // Fetch lineup for homeTeam's first match
+    const firstMatch = teamMatches[0];
+    if (!firstMatch) return;
+    setLineupLoading(true);
+    getWWCLineup(firstMatch.match_id).then(lineup => {
+      const teamLineup = lineup.filter(p => stripWomens(p.team) === homeTeam);
+      setPlayers(lineupToPlayers(teamLineup));
+      setLineupLoading(false);
+    });
+  }, [homeTeam, allMatches]);
 
   // --- Discovery Data ---
   const communityTactics = [
@@ -345,7 +444,7 @@ export default function TacticsView() {
                       <div className="flex items-center gap-2">
                          <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
                          <span className="text-sm font-bold text-white truncate max-w-[140px]">
-                           {upcomingMatches[0].home} vs {upcomingMatches[0].away}
+                           {upcomingMatches.length > 0 ? `${upcomingMatches[0].home} vs ${upcomingMatches[0].away}` : 'Loading...'}
                          </span>
                       </div>
                       <ChevronDown className="w-3 h-3 text-zinc-500" />
@@ -452,6 +551,13 @@ export default function TacticsView() {
             className="absolute bottom-0 left-1/2 -translate-x-1/2 w-64 h-32 border-x border-t border-white/20 bg-white/[0.02]" 
             style={{ transform: 'perspective(1000px) rotateX(10deg)' }}
           />
+
+          {/* Loading overlay */}
+          {lineupLoading && (
+            <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/40 backdrop-blur-sm">
+              <div className="text-white text-sm font-bold animate-pulse uppercase tracking-widest">Loading Lineup...</div>
+            </div>
+          )}
 
           {/* Player Tokens */}
           {players.map((p) => (

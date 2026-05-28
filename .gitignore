@@ -1,0 +1,9 @@
+node_modules/
+build/
+dist/
+.env.local
+.env
+*.env
+nohup.out
+__pycache__/
+*.pyc
