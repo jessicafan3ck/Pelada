@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   Home, Target, Box, Settings, Bell, Menu,
-  Cpu, Globe, Database, Activity, Calendar,
+  Cpu, Globe, Database, Activity, Calendar, MessageSquare,
   Users2, FlaskConical, GitBranch,
 } from 'lucide-react';
 import Dashboard from './components/Dashboard';
@@ -28,15 +28,6 @@ type ViewType =
   | 'lineup' | 'community' | 'similarity'
   | 'simulation';
 
-function PeladaIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 32 32" className={className} aria-hidden fill="none">
-      <polyline points="1,5 8,13 16,5 24,13 31,5"   stroke="#F59E0B" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round" />
-      <polyline points="1,27 8,19 16,27 24,19 31,27" stroke="#009C3B" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 // Per-category accent colours — full static strings so Tailwind JIT includes them
 const CATEGORY_ACCENT = {
   General: { grad: 'from-sky-500/20 to-blue-700/5',     icon: 'text-sky-400',    dot: 'bg-sky-400',    dotGlow: 'shadow-[0_0_8px_rgba(56,189,248,0.8)]',    label: 'text-sky-600'    },
@@ -56,7 +47,7 @@ function AppShell() {
 
   const allNavItems = [
     { id: 'dashboard' as ViewType,  name: 'Hub',               icon: Home,        category: 'General',  analystOnly: false },
-    { id: 'copilot' as ViewType,    name: 'Co-Pilot',          icon: PeladaIcon,    category: 'General', analystOnly: false },
+    { id: 'copilot' as ViewType,    name: 'Co-Pilot',          icon: MessageSquare, category: 'General', analystOnly: false },
     { id: 'lineup' as ViewType,      name: 'Lineup',            icon: Users2,      category: 'Explore',  analystOnly: false },
     { id: 'similarity' as ViewType, name: 'Scout',             icon: GitBranch,   category: 'Explore',  analystOnly: false },
 
@@ -107,14 +98,10 @@ function AppShell() {
         <div className="h-20 flex items-center px-6 border-b border-white/5 relative overflow-hidden shrink-0">
           <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-transparent pointer-events-none" />
           <div className="flex items-center gap-3 relative z-10">
-            <div className="w-8 h-8 rounded-lg shrink-0 overflow-hidden relative" style={{ background: '#fff' }}>
-              <svg className="absolute inset-0" viewBox="0 0 32 32" width="32" height="32" aria-hidden>
-                {/* W — gold outline then black on top */}
-                <polyline points="1,5 8,13 16,5 24,13 31,5"   stroke="#F59E0B" strokeWidth="6.5" fill="none" strokeLinejoin="round" strokeLinecap="round" />
-                <polyline points="1,5 8,13 16,5 24,13 31,5"   stroke="#000"    strokeWidth="3"   fill="none" strokeLinejoin="round" strokeLinecap="round" />
-                {/* M — green outline then black on top */}
-                <polyline points="1,27 8,19 16,27 24,19 31,27" stroke="#009C3B" strokeWidth="6.5" fill="none" strokeLinejoin="round" strokeLinecap="round" />
-                <polyline points="1,27 8,19 16,27 24,19 31,27" stroke="#000"    strokeWidth="3"   fill="none" strokeLinejoin="round" strokeLinecap="round" />
+            <div className="w-8 h-8 rounded-lg shrink-0 overflow-hidden relative" style={{ background: '#000' }}>
+              <svg className="absolute inset-0" viewBox="0 0 32 32" width="32" height="32" aria-hidden fill="none">
+                <polyline points="1,5 8,13 16,5 24,13 31,5"   stroke="#F59E0B" strokeWidth="4.5" strokeLinejoin="round" strokeLinecap="round" />
+                <polyline points="1,27 8,19 16,27 24,19 31,27" stroke="#009C3B" strokeWidth="4.5" strokeLinejoin="round" strokeLinecap="round" />
               </svg>
             </div>
             {isSidebarOpen && (

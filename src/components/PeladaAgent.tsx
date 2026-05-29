@@ -69,10 +69,21 @@ const VIZ_COMPONENTS: Record<string, React.ReactElement> = {
 
 // ─── sub-components defined OUTSIDE parent so React identity stays stable ────
 
+function LogoAvatar() {
+  return (
+    <div className="w-8 h-8 rounded-lg shrink-0 overflow-hidden relative" style={{ background: '#000' }}>
+      <svg className="absolute inset-0" viewBox="0 0 32 32" width="32" height="32" aria-hidden fill="none">
+        <polyline points="1,5 8,13 16,5 24,13 31,5"   stroke="#F59E0B" strokeWidth="4.5" strokeLinejoin="round" strokeLinecap="round" />
+        <polyline points="1,27 8,19 16,27 24,19 31,27" stroke="#009C3B" strokeWidth="4.5" strokeLinejoin="round" strokeLinecap="round" />
+      </svg>
+    </div>
+  );
+}
+
 function TypingDots() {
   return (
     <div className="flex items-center gap-3 px-1">
-      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-500/30 to-sky-600/30 border border-sky-500/20 flex items-center justify-center shrink-0" />
+      <LogoAvatar />
       <div className="bg-white/5 border border-white/8 px-4 py-3 rounded-2xl rounded-bl-sm flex gap-1.5 items-center">
         <span className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
         <span className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-bounce" style={{ animationDelay: '120ms' }} />
@@ -287,13 +298,12 @@ export default function PeladaAgent({ onNavigate, currentView, isOpen, onOpenCha
       {(msg.text || msg.action) && (
         <div className={`flex gap-3 max-w-3xl mx-auto w-full ${msg.type === 'user' ? 'flex-row-reverse' : ''}`}>
           {/* Avatar */}
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-            msg.type === 'user'
-              ? 'bg-gradient-to-br from-sky-500 to-sky-600'
-              : 'bg-gradient-to-br from-sky-500/20 to-sky-600/20 border border-sky-500/20'
-          }`}>
-            {msg.type === 'user' && <User className="w-4 h-4 text-white" />}
-          </div>
+          {msg.type === 'agent'
+            ? <div className="mt-0.5"><LogoAvatar /></div>
+            : <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-gradient-to-br from-sky-500 to-sky-600">
+                <User className="w-4 h-4 text-white" />
+              </div>
+          }
 
           <div className={`flex flex-col gap-2 ${msg.type === 'user' ? 'items-end max-w-[75%]' : 'items-start w-full'}`}>
             {msg.text && (
