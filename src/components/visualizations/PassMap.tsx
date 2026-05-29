@@ -9,9 +9,8 @@ const PassMap = () => {
   const [selectedTeam, setSelectedTeam] = useState('all');
 
   const hasValidCoords = (e: any) =>
-    (e.x !== null && e.y !== null) ||
-    (e.x_location_start !== null && e.y_location_start !== null) ||
-    (e.x_location_end !== null && e.y_location_end !== null);
+    (e.x_location_start != null && e.y_location_start != null) ||
+    (e.x_location_end   != null && e.y_location_end   != null);
 
   const matchEvents = events;
 

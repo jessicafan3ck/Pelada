@@ -84,19 +84,34 @@ function posCoords(position: string, idx: number): { x: number; y: number } {
   return { x: 20 + col * 22, y: 85 - row * 18 };
 }
 
+// StatsBomb pitch: 120 yards long × 80 yards wide → normalise to 0–1
+const SB_X = 120;
+const SB_Y = 80;
+
+function stripWomens(name: string) { return name.replace(/\s*Women's?/i, '').trim(); }
+
 function wwcEventToLegacy(e: WWCEvent): Event {
+  // In StatsBomb, a null pass_outcome means the pass was successful
+  const rawOutcome = e.pass_outcome || e.shot_outcome || e.dribble_outcome;
+  const outcome = rawOutcome
+    ? rawOutcome.toLowerCase()
+    : e.type === 'Pass' ? 'complete' : undefined;
+
   return {
     match_id:         e.match_id,
-    team_name:        e.team,
+    team_name:        stripWomens(e.team),
     from_player_name: e.player || undefined,
     to_player_name:   e.pass_recipient || undefined,
     event:            e.type.toLowerCase(),
-    outcome:          (e.pass_outcome || e.shot_outcome || e.dribble_outcome || '').toLowerCase() || undefined,
+    outcome,
     minute:           e.minute,
-    x_location_start: e.x          ?? undefined,
-    y_location_start: e.y          ?? undefined,
-    x_location_end:   (e.pass_end_x ?? e.carry_end_x) ?? undefined,
-    y_location_end:   (e.pass_end_y ?? e.carry_end_y) ?? undefined,
+    // Normalise StatsBomb coords (0-120 / 0-80) to 0-1 fraction
+    x_location_start: e.x         != null ? e.x / SB_X         : undefined,
+    y_location_start: e.y         != null ? e.y / SB_Y         : undefined,
+    x_location_end:   e.pass_end_x  != null ? e.pass_end_x / SB_X
+                    : e.carry_end_x != null ? e.carry_end_x / SB_X : undefined,
+    y_location_end:   e.pass_end_y  != null ? e.pass_end_y / SB_Y
+                    : e.carry_end_y != null ? e.carry_end_y / SB_Y : undefined,
     pressure:         e.under_pressure ? 'under_pressure' : undefined,
     xg:               e.shot_xg   ?? undefined,
   };

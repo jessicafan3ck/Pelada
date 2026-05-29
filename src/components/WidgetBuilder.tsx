@@ -274,6 +274,9 @@ DATA & INTERACTIVITY RULES:
 - If it involves players, show the top 5 by the relevant metric from the real data
 - Pair every stat with a selector or label so the user knows which team/player it represents
 - Do NOT use emojis anywhere in the widget — no emoji in labels, tooltips, axis ticks, or text
+- Use vivid, readable colors for every chart element — no dark bars on dark backgrounds
+- Add a <Legend /> to every chart that shows multiple data series
+- Always include axis labels and a Tooltip
 
 ${realDataSnippet ? `REAL WWC 2023 DATA (use these exact numbers):\n${realDataSnippet}\n` : ''}
 User request: ${userRequest}`;
