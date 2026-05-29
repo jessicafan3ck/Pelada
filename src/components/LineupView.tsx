@@ -2,6 +2,7 @@ import React, { useContext, useMemo, useState } from 'react';
 import { Users } from 'lucide-react';
 import { DataContext } from '../context/DataContext';
 import { useAppContext, SelectedPlayer } from '../context/AppContext';
+import MatchContextBar from './MatchContextBar';
 
 interface PlayerDot {
   id: number;
@@ -115,9 +116,12 @@ export default function LineupView() {
 
   if (!match) {
     return (
-      <div className="flex flex-col items-center justify-center h-96 text-zinc-500 gap-3">
-        <Users className="w-10 h-10 opacity-30" />
-        <p className="text-sm">Select a match from the top bar to see the lineup.</p>
+      <div className="space-y-6">
+        <MatchContextBar />
+        <div className="flex flex-col items-center justify-center h-96 text-zinc-500 gap-3">
+          <Users className="w-10 h-10 opacity-30" />
+          <p className="text-sm">Select a match above to see the lineup.</p>
+        </div>
       </div>
     );
   }
@@ -127,6 +131,7 @@ export default function LineupView() {
 
   return (
     <div className="space-y-6">
+      <MatchContextBar />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

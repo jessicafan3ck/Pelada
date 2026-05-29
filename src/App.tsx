@@ -16,7 +16,6 @@ import PeladaAgent from './components/PeladaAgent';
 import LineupView from './components/LineupView';
 import ContextPanel from './components/ContextPanel';
 import MCMCSimulation from './components/MCMCSimulation';
-import MatchContextBar from './components/MatchContextBar';
 import CommunityLibrary from './components/CommunityLibrary';
 import PlayerSimilarity from './components/visualizations/PlayerSimilarity';
 import { DataContextProvider } from './context/DataContext';
@@ -204,8 +203,7 @@ function AppShell() {
             <Menu className="w-4 h-4" />
           </button>
 
-          {/* Match context bar fills middle */}
-          <MatchContextBar />
+          <div className="flex-1" />
 
           {/* Right actions */}
           <div className="flex items-center gap-2 shrink-0">
