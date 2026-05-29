@@ -42,6 +42,7 @@ export function buildWidgetSrcdoc(rawCode: string): string {
 
   return `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"/>
+<script>window.process={env:{NODE_ENV:'production'}};</script>
 <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js" onerror="window.__loadErr='React failed to load'"></script>
 <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js" onerror="window.__loadErr='ReactDOM failed to load'"></script>
 <script src="https://cdn.jsdelivr.net/npm/recharts@2.10.3/umd/Recharts.js" onerror="window.__loadErr='Recharts failed to load'"></script>
@@ -63,7 +64,7 @@ if(typeof React==='undefined'){showErr("React not loaded");return;}
 if(typeof ReactDOM==='undefined'){showErr("ReactDOM not loaded");return;}
 var R=window.Recharts||{};
 var missingR=${rechartsKeys}.filter(function(k){return!R[k];});
-if(missingR.length===${RECHARTS_KEYS.length}){showErr("Recharts not available (window.Recharts is empty). CDN may be blocked.");return;}
+if(missingR.length===${RECHARTS_KEYS.length}){showErr("Recharts not available. typeof window.Recharts="+typeof window.Recharts+". Keys found: "+Object.keys(window.Recharts||{}).slice(0,5).join(",")||"none");return;}
 var c=${safe};
 try{
 var t=Babel.transform(c,{presets:["react","typescript"],sourceType:"module",filename:"widget.tsx"}).code;
