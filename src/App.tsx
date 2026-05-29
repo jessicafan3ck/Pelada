@@ -103,8 +103,8 @@ function AppShell() {
               <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #FBBF24 50%, #38BDF8 50%)' }} />
               {/* W+M double chevron (the brand pattern) */}
               <svg className="absolute inset-0" viewBox="0 0 32 32" width="32" height="32" aria-hidden>
-                <polyline points="1,9 8,16 16,9 24,16 31,9"  stroke="rgba(0,0,0,0.45)" strokeWidth="2.5" fill="none" strokeLinejoin="round" strokeLinecap="round" />
-                <polyline points="1,16 8,23 16,16 24,23 31,16" stroke="rgba(0,0,0,0.45)" strokeWidth="2.5" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+                <polyline points="1,8 8,16 16,8 24,16 31,8"   stroke="rgba(0,0,0,0.45)" strokeWidth="2.5" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+                <polyline points="1,24 8,16 16,24 24,16 31,24" stroke="rgba(0,0,0,0.45)" strokeWidth="2.5" fill="none" strokeLinejoin="round" strokeLinecap="round" />
               </svg>
             </div>
             {isSidebarOpen && (
