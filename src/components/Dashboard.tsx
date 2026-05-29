@@ -160,6 +160,57 @@ export default function Dashboard({ onOpenAgent, onNavigate }: DashboardProps) {
         </div>
       </div>
 
+      {/* ── Live Ticker ─────────────────────────────────────────────────────── */}
+      <div style={{ overflow: 'hidden', background: '#060606', borderRadius: '14px', height: '46px', display: 'flex', alignItems: 'center' }}>
+        <style>{`
+          @keyframes pelada-ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+          .pelada-ticker-track { animation: pelada-ticker 40s linear infinite; white-space: nowrap; display: flex; will-change: transform; }
+          .pelada-ticker-track:hover { animation-play-state: paused; }
+        `}</style>
+        <div className="pelada-ticker-track">
+          {[0, 1].map(copy => (
+            <span key={copy} style={{ display: 'inline-flex', alignItems: 'center' }}>
+              {[
+                { t: '64 Matches',          c: '#00C2A8' },
+                { t: '·',                   c: 'rgba(255,255,255,0.12)' },
+                { t: '32 Nations',          c: '#fff' },
+                { t: '·',                   c: 'rgba(255,255,255,0.12)' },
+                { t: '164 Goals',           c: '#E8197D' },
+                { t: '·',                   c: 'rgba(255,255,255,0.12)' },
+                { t: '164K Events Tracked', c: '#00C2A8' },
+                { t: '·',                   c: 'rgba(255,255,255,0.12)' },
+                { t: '3,841 × 360° Frames', c: '#fff' },
+                { t: '·',                   c: 'rgba(255,255,255,0.12)' },
+                { t: 'Aitana Bonmatí · Golden Ball', c: '#E8197D' },
+                { t: '·',                   c: 'rgba(255,255,255,0.12)' },
+                { t: 'España Campeonas',    c: '#00C2A8' },
+                { t: '·',                   c: 'rgba(255,255,255,0.12)' },
+                { t: 'Brasil 2027 · Next Stage', c: '#fff' },
+                { t: '·',                   c: 'rgba(255,255,255,0.12)' },
+              ].map(({ t, c }, j) => (
+                <span key={j} style={{ color: c, fontSize: '10.5px', fontWeight: 800, letterSpacing: '0.13em', textTransform: 'uppercase', paddingLeft: '20px', paddingRight: '20px' }}>{t}</span>
+              ))}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* ── By The Numbers ──────────────────────────────────────────────────── */}
+      <div style={{ background: '#000', borderRadius: '20px', padding: '28px 48px', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)' }}>
+        {[
+          { n: '64',   l: 'Matches Played', c: '#00C2A8' },
+          { n: '32',   l: 'Nations',        c: '#fff'    },
+          { n: '164',  l: 'Goals Scored',   c: '#E8197D' },
+          { n: '164K', l: 'Events Tracked', c: '#00C2A8' },
+          { n: '3,841',l: '360° Frames',    c: '#fff'    },
+        ].map(({ n, l, c }, i) => (
+          <div key={i} style={{ textAlign: 'center', borderLeft: i > 0 ? '1px solid rgba(255,255,255,0.05)' : 'none', padding: '0 8px' }}>
+            <div style={{ fontSize: '40px', fontWeight: 900, color: c, letterSpacing: '-0.03em', lineHeight: 1 }}>{n}</div>
+            <div style={{ fontSize: '9.5px', fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.16em', marginTop: '8px' }}>{l}</div>
+          </div>
+        ))}
+      </div>
+
       {/* ── Main Grid ────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-12 gap-6 lg:gap-8">
 
@@ -291,6 +342,47 @@ export default function Dashboard({ onOpenAgent, onNavigate }: DashboardProps) {
                   <div className="text-[10px] text-zinc-500 font-mono">{u.score.toLocaleString()}</div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Brasil 2027 Callout ─────────────────────────────────────────────── */}
+      <div className="relative rounded-3xl overflow-hidden" style={{ minHeight: '140px' }}>
+        {/* Yellow base */}
+        <div className="absolute inset-0" style={{ background: '#009C3B' }} />
+        {/* Gold diagonal block */}
+        <div
+          className="absolute left-0 top-0 bottom-0"
+          style={{ width: '52%', background: '#FFDF00', clipPath: 'polygon(0% 0%, 100% 0%, 72% 100%, 0% 100%)' }}
+        />
+        {/* Chevron pattern */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.07 }} aria-hidden="true">
+          <defs>
+            <pattern id="br-chevrons" x="0" y="0" width="60" height="42" patternUnits="userSpaceOnUse">
+              <polyline points="0,0 30,21 60,0"  stroke="black" strokeWidth="6" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+              <polyline points="0,21 30,42 60,21" stroke="black" strokeWidth="6" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#br-chevrons)" />
+        </svg>
+        <div className="relative z-10 flex items-center justify-between px-10 py-6">
+          {/* Left: wordmark on yellow */}
+          <div>
+            <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.28em', color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', marginBottom: '8px' }}>
+              Next Stage · Host Nation
+            </div>
+            <div style={{ fontSize: '54px', fontWeight: 900, color: '#000', textTransform: 'uppercase', letterSpacing: '-0.02em', lineHeight: '0.88' }}>
+              BRASIL<br />2027.
+            </div>
+          </div>
+          {/* Right: tagline on green */}
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.28em', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '10px' }}>
+              The data is ready. Are you?
+            </div>
+            <div style={{ fontSize: '36px', fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: '-0.01em', lineHeight: '1.05' }}>
+              NEXT CHAPTER<br />STARTS HERE.
             </div>
           </div>
         </div>
