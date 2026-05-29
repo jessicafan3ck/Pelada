@@ -381,24 +381,22 @@ export default function PeladaAgent({ onNavigate, currentView, isOpen, onOpenCha
 
         {copilotTab === 'chat' ? (
           messages.length === 0 ? (
-            /* ── Empty state: all 3 sections in one justify-evenly container ── */
-            <div className="flex-1 flex flex-col items-center px-8 text-center">
-              <div className="flex-1" />
-              <p className="text-zinc-400 text-sm leading-relaxed max-w-sm">
-                Ask me to visualize data, navigate to a section,<br />or analyze a tactical idea.
+            /* ── Empty state ── */
+            <div className="flex-1 flex flex-col items-center px-8 text-center justify-center" style={{ gap: '36px' }}>
+              <p style={{ color: 'rgba(255,255,255,0.82)', fontSize: '14px', lineHeight: 1.7, maxWidth: '380px' }}>
+                Ask me anything — xG trends, pass networks, tactical breakdowns — or pick a quick action below to get started.
               </p>
-              <div className="flex-1" />
               <div className="w-full max-w-3xl">
                 <ChatInput
                   value={inputValue}
                   onChange={setInputValue}
                   onSend={handleSend}
-                  placeholder="Ask about pass maps, tactics, formations, or navigate the platform..."
+                  placeholder="Ask me anything..."
                   autoFocus
                   variant="amber"
                 />
               </div>
-              <div className="flex flex-wrap gap-3 justify-center max-w-md mt-4">
+              <div className="flex flex-wrap gap-3 justify-center max-w-md">
                 {QUICK_PROMPTS.map(q => (
                   <button key={q.prompt} onClick={() => sendMessage(q.prompt)}
                     className="px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wide transition-all hover:scale-105"
@@ -407,7 +405,6 @@ export default function PeladaAgent({ onNavigate, currentView, isOpen, onOpenCha
                   </button>
                 ))}
               </div>
-              <div className="flex-1" />
             </div>
           ) : (
             <>
