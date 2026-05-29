@@ -749,12 +749,12 @@ export default function ScoutPage() {
     <div className="bg-black rounded-2xl border border-white/[0.06] overflow-hidden">
       <div className="px-6 pt-6 pb-4">
         <h2 className="text-xl font-bold text-white tracking-tight">Scout</h2>
-        <p className="text-xs text-zinc-300 mt-0.5">WC 2022 knockout stage · {filtered.length} players</p>
+        <p className="text-xs text-zinc-300 mt-0.5">WC 2022 Knockout Stage · {filtered.length} Players</p>
       </div>
       <div className="flex items-center border-b border-white/[0.05] px-6 mb-4">
         {(['cards', 'rankings', 'scatter'] as Tab[]).map(t => (
           <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-2.5 text-xs font-semibold capitalize transition-all relative ${tab === t ? 'text-white' : 'text-zinc-400 hover:text-zinc-400'}`}>
+            className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all relative ${tab === t ? 'text-white' : 'text-zinc-400 hover:text-zinc-200'}`}>
             {t}
             {tab === t && <motion.div layoutId="scout-tab" className="absolute bottom-0 left-0 right-0 h-px bg-white" />}
           </button>

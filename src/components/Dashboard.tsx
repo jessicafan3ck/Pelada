@@ -299,13 +299,17 @@ export default function Dashboard({ onOpenAgent, onNavigate }: DashboardProps) {
                 <div key={i} onClick={() => onNavigate('simulation')}
                   className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 hover:bg-white/[0.06] cursor-pointer transition-all"
                 >
-                  <div className="text-[9px] text-zinc-600 font-bold uppercase tracking-wider">{m.stage} · {m.date}</div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full shrink-0" style={{ background: teamColor(strip(m.home_team)) }} />
-                    <span className="text-[11px] font-bold text-white">{strip(m.home_team)}</span>
-                    <span className="text-[10px] text-zinc-600">{m.home_score}–{m.away_score}</span>
-                    <span className="text-[11px] font-bold text-white">{strip(m.away_team)}</span>
-                    <div className="w-2 h-2 rounded-full shrink-0" style={{ background: teamColor(strip(m.away_team)) }} />
+                  <div className="text-[9px] text-zinc-600 font-bold uppercase tracking-wider text-center">{m.stage} · {m.date}</div>
+                  <div className="flex items-center gap-1.5 w-full min-w-0">
+                    <div className="flex-1 flex items-center gap-1 min-w-0">
+                      <div className="w-2 h-2 rounded-full shrink-0" style={{ background: teamColor(strip(m.home_team)) }} />
+                      <span className="text-[11px] font-bold text-white truncate">{strip(m.home_team)}</span>
+                    </div>
+                    <span className="text-[10px] text-zinc-600 shrink-0 tabular-nums px-1">{m.home_score}–{m.away_score}</span>
+                    <div className="flex-1 flex items-center gap-1 justify-end min-w-0">
+                      <span className="text-[11px] font-bold text-white truncate text-right">{strip(m.away_team)}</span>
+                      <div className="w-2 h-2 rounded-full shrink-0" style={{ background: teamColor(strip(m.away_team)) }} />
+                    </div>
                   </div>
                 </div>
               ))}
@@ -366,10 +370,10 @@ export default function Dashboard({ onOpenAgent, onNavigate }: DashboardProps) {
           </defs>
           <rect width="100%" height="100%" fill="url(#br-chevrons)" />
         </svg>
-        <div className="relative z-10 flex items-center justify-between px-10 py-6">
+        <div className="relative z-10 flex items-center justify-between" style={{ padding: '24px 40px' }}>
           {/* Left: wordmark on yellow */}
-          <div>
-            <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.28em', color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', marginBottom: '8px' }}>
+          <div style={{ paddingLeft: '0px' }}>
+            <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.2em', color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', marginBottom: '8px' }}>
               Next Stage · Host Nation
             </div>
             <div style={{ fontSize: '54px', fontWeight: 900, color: '#000', textTransform: 'uppercase', letterSpacing: '-0.02em', lineHeight: '0.88' }}>
@@ -378,7 +382,7 @@ export default function Dashboard({ onOpenAgent, onNavigate }: DashboardProps) {
           </div>
           {/* Right: tagline on green */}
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.28em', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '10px' }}>
+            <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '8px' }}>
               The data is ready. Are you?
             </div>
             <div style={{ fontSize: '36px', fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: '-0.01em', lineHeight: '1.05' }}>
