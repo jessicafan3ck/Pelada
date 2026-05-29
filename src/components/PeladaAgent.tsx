@@ -388,16 +388,6 @@ export default function PeladaAgent({ onNavigate, currentView, isOpen, onOpenCha
                 Ask me to visualize data, navigate to a section,<br />or analyze a tactical idea.
               </p>
               <div className="flex-1" />
-              <div className="flex flex-wrap gap-3 justify-center max-w-md">
-                {QUICK_PROMPTS.map(q => (
-                  <button key={q.prompt} onClick={() => sendMessage(q.prompt)}
-                    className="px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wide transition-all hover:scale-105"
-                    style={{ background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.28)', color: '#FBBF24' }}>
-                    {q.label}
-                  </button>
-                ))}
-              </div>
-              <div className="flex-1" />
               <div className="w-full max-w-3xl">
                 <ChatInput
                   value={inputValue}
@@ -407,6 +397,15 @@ export default function PeladaAgent({ onNavigate, currentView, isOpen, onOpenCha
                   autoFocus
                   variant="amber"
                 />
+              </div>
+              <div className="flex flex-wrap gap-3 justify-center max-w-md mt-4">
+                {QUICK_PROMPTS.map(q => (
+                  <button key={q.prompt} onClick={() => sendMessage(q.prompt)}
+                    className="px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wide transition-all hover:scale-105"
+                    style={{ background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.28)', color: '#FBBF24' }}>
+                    {q.label}
+                  </button>
+                ))}
               </div>
               <div className="flex-1" />
             </div>
