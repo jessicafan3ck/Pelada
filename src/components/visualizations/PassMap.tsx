@@ -14,6 +14,14 @@ const PassMap = () => {
   const [selectedTeam,    setSelectedTeam]    = useState('all');
   const [selectedMatchId, setSelectedMatchId] = useState<'all' | number>('all');
 
+  const stripW = (s: string) => s.replace(/\s*Women's?/i, '').trim();
+
+  // Only show matches that have actual event rows loaded
+  const matchesWithData = useMemo(() => {
+    const ids = new Set(events.map(e => e.match_id));
+    return matchMeta.filter(m => ids.has(m.match_id));
+  }, [events, matchMeta]);
+
   const matchEvents = useMemo(() => {
     if (selectedMatchId === 'all') return events;
     return events.filter(e => e.match_id === selectedMatchId);
@@ -100,10 +108,10 @@ const PassMap = () => {
               onChange={e => setSelectedMatchId(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
               className={selectCls}
             >
-              <option value="all">All Matches</option>
-              {matchMeta.map(m => (
+              <option value="all">All Matches ({matchesWithData.length})</option>
+              {matchesWithData.map(m => (
                 <option key={m.match_id} value={m.match_id}>
-                  {m.home_team} vs {m.away_team}
+                  {stripW(m.home_team)} vs {stripW(m.away_team)}
                 </option>
               ))}
             </select>

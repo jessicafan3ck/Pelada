@@ -31,8 +31,11 @@ def _load_env():
 
 _load_env()
 
+# Use the service-role key for writes (bypasses RLS).
+# Falls back to VITE_SUPABASE_KEY if SUPABASE_SERVICE_KEY is not set,
+# but writes will fail if RLS policies block the anon role.
 SUPABASE_URL = os.environ["VITE_SUPABASE_URL"]
-SUPABASE_KEY = os.environ["VITE_SUPABASE_KEY"]
+SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY") or os.environ["VITE_SUPABASE_KEY"]
 
 client: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -158,6 +161,8 @@ def ingest_wwc_matches(df) -> list[int]:
 # ── WWC 2023: Lineups ─────────────────────────────────────────────────────────
 
 def ingest_wwc_lineups(match_id: int):
+    # Delete existing rows first so re-runs don't create duplicates
+    client.table("wwc2023_lineups").delete().eq("match_id", match_id).execute()
     try:
         lineups = sb.lineups(match_id=match_id)
     except Exception as e:
@@ -267,6 +272,7 @@ def ingest_wwc_events(match_id: int) -> pd.DataFrame:
 def ingest_wwc_360(match_id: int, events: pd.DataFrame):
     if events.empty:
         return
+    client.table("wwc2023_threesixty").delete().eq("match_id", match_id).execute()
     try:
         with urlopen(SB360_URL.format(match_id)) as r:
             frames = json.loads(r.read())
@@ -295,6 +301,8 @@ def ingest_wwc_360(match_id: int, events: pd.DataFrame):
 def ingest_wwc_player_stats(match_id: int, events: pd.DataFrame):
     if events.empty:
         return
+    # Delete existing rows so re-runs are clean
+    client.table("wwc2023_player_stats").delete().eq("match_id", match_id).execute()
     stats: dict[str, dict] = {}
 
     def _get(player, team, pid):
@@ -391,6 +399,7 @@ def ingest_m22_matches(df) -> list[int]:
 
 
 def ingest_m22_lineups(match_id: int):
+    client.table("wc2022m_lineups").delete().eq("match_id", match_id).execute()
     try:
         lineups = sb.lineups(match_id=match_id)
     except Exception:
@@ -419,6 +428,7 @@ def ingest_m22_lineups(match_id: int):
 
 def ingest_m22_player_stats(df):
     """Tournament-aggregated player stats across all men's 2022 WC matches."""
+    client.table("wc2022m_player_stats").delete().neq("id", 0).execute()
     agg: dict[int, dict] = {}  # player_id → stats
 
     def _get(pid, name, nickname, team, pos):
