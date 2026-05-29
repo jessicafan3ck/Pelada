@@ -190,7 +190,8 @@ export async function getWWCTournamentPlayerStats(): Promise<TournamentPlayerSta
       'player_id, player_name, team, shots, goals, xg, passes, passes_complete,' +
       'pressures, dribbles_complete, minutes_played, assists, key_passes,' +
       'shots_on_target, carries',
-    );
+    )
+    .limit(10000);
   if (error) { console.error('getWWCTournamentPlayerStats:', error.message); return []; }
 
   const agg: Record<number, TournamentPlayerStat> = {};
@@ -249,9 +250,11 @@ export async function getWWCEventsForMatch(
     .from('wwc2023_events')
     .select('*')
     .eq('match_id', matchId)
-    .order('idx', { ascending: true });
+    .order('idx', { ascending: true })
+    .limit(10000);
   if (types?.length) q = q.in('type', types);
-  const { data } = await q;
+  const { data, error } = await q;
+  if (error) console.error('getWWCEventsForMatch:', error.message);
   return (data ?? []) as WWCEvent[];
 }
 
