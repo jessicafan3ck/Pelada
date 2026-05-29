@@ -382,7 +382,7 @@ export default function PeladaAgent({ onNavigate, currentView, isOpen, onOpenCha
         {copilotTab === 'chat' ? (
           messages.length === 0 ? (
             /* ── Empty state ── */
-            <div className="flex-1 flex flex-col items-center px-8 text-center justify-center" style={{ gap: '36px' }}>
+            <div className="flex-1 flex flex-col items-center px-8 text-center" style={{ gap: '36px', paddingTop: '36px', paddingBottom: '36px' }}>
               <p style={{ color: 'rgba(255,255,255,0.82)', fontSize: '14px', lineHeight: 1.7, maxWidth: '380px' }}>
                 Ask me anything — xG trends, pass networks, tactical breakdowns — or pick a quick action below to get started.
               </p>
