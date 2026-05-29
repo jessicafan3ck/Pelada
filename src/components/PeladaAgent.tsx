@@ -55,7 +55,6 @@ const VIEW_LABELS: Record<string, string> = {
 };
 
 const QUICK_PROMPTS = [
-  { label: 'Team xG quadrant', prompt: 'Show me a team xG quadrant comparison' },
   { label: 'Pass map', prompt: 'Show me a pass map' },
   { label: 'Pressure timeline', prompt: 'Show a pressure timeline' },
   { label: 'Tactics Studio', prompt: 'Take me to the Tactics Studio' },
@@ -310,66 +309,66 @@ export default function PeladaAgent({ onNavigate, currentView, isOpen, onOpenCha
 
   if (fullPage) {
     return (
-      <div className="h-full flex flex-col bg-black/40 backdrop-blur-2xl rounded-3xl border border-white/5 overflow-hidden relative">
+      <div className="h-full flex flex-col bg-black/40 backdrop-blur-2xl rounded-3xl border border-white/5 overflow-hidden">
 
-        {/* Ambient brand glows — sit behind everything */}
-        <div className="pointer-events-none absolute inset-0 z-0">
-          <div className="absolute top-[-60px] left-[-60px] w-72 h-72 rounded-full" style={{ background: 'radial-gradient(circle, rgba(0,194,168,0.10) 0%, transparent 70%)' }} />
-          <div className="absolute bottom-[-60px] right-[-60px] w-72 h-72 rounded-full" style={{ background: 'radial-gradient(circle, rgba(232,25,125,0.08) 0%, transparent 70%)' }} />
-        </div>
-
-        {/* ── Header ── slim, functional, dark */}
-        <div className="relative z-10 shrink-0 flex items-center justify-between px-8 py-4 bg-black/20">
-          <div className="flex items-center gap-3">
-            <div className="w-1.5 h-6 rounded-full" style={{ background: 'linear-gradient(180deg, #00C2A8, #E8197D)' }} />
+        {/* ── GO EPIC.-style banner header — amber + sky blue ── */}
+        <div className="relative shrink-0 overflow-hidden" style={{ height: '88px' }}>
+          {/* Amber base */}
+          <div className="absolute inset-0" style={{ background: '#FBBF24' }} />
+          {/* Sky blue diagonal — right portion */}
+          <div className="absolute inset-0" style={{ background: '#38BDF8', clipPath: 'polygon(50% 0%, 100% 0%, 100% 100%, 28% 100%)' }} />
+          {/* Chevron pattern overlay */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.07 }} aria-hidden>
+            <defs>
+              <pattern id="copilot-chevrons" x="0" y="0" width="40" height="28" patternUnits="userSpaceOnUse">
+                <polyline points="0,0 20,14 40,0"   stroke="black" strokeWidth="3" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+                <polyline points="0,14 20,28 40,14" stroke="black" strokeWidth="3" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#copilot-chevrons)" />
+          </svg>
+          {/* Header content */}
+          <div className="relative z-10 h-full flex items-center justify-between px-8">
             <div>
-              <div style={{ fontSize: '8px', fontWeight: 800, letterSpacing: '0.25em', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase' }}>Pelada Analytics</div>
-              <div style={{ fontSize: '15px', fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: '-0.01em', lineHeight: 1.1 }}>Co-Pilot.</div>
+              <div style={{ fontSize: '8px', fontWeight: 800, letterSpacing: '0.28em', color: 'rgba(0,0,0,0.35)', textTransform: 'uppercase', marginBottom: '2px' }}>Pelada Analytics</div>
+              <div style={{ fontSize: '28px', fontWeight: 900, color: '#000', textTransform: 'uppercase', letterSpacing: '-0.02em', lineHeight: 1 }}>Co-Pilot.</div>
+            </div>
+            <div className="flex items-center gap-5">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'rgba(0,0,0,0.5)' }} />
+                <span style={{ fontSize: '9px', fontWeight: 800, color: 'rgba(0,0,0,0.45)', letterSpacing: '0.22em', textTransform: 'uppercase' }}>Online</span>
+              </div>
+              <div className="flex p-1 gap-0.5 rounded-xl" style={{ background: 'rgba(0,0,0,0.10)', border: '1px solid rgba(0,0,0,0.08)' }}>
+                {(['chat', 'library'] as const).map(t => (
+                  <button key={t} onClick={() => setCopilotTab(t)}
+                    className="px-5 py-1.5 rounded-lg text-xs font-bold transition-all"
+                    style={copilotTab === t
+                      ? { background: 'rgba(0,0,0,0.18)', color: '#000' }
+                      : { color: 'rgba(0,0,0,0.38)' }}>
+                    {t === 'chat' ? 'Ask' : 'Library'}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_6px_#4ade80]" />
-              <span style={{ fontSize: '9px', fontWeight: 800, color: '#4ade80', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Online</span>
-            </div>
-            <div className="flex bg-white/5 border border-white/8 p-1 gap-1 rounded-xl">
-              {(['chat', 'library'] as const).map(t => (
-                <button key={t} onClick={() => setCopilotTab(t)}
-                  className={`px-5 py-1.5 rounded-lg text-xs font-bold transition-all ${copilotTab === t ? 'bg-white/15 text-white' : 'text-zinc-500 hover:text-white'}`}>
-                  {t === 'chat' ? 'Ask' : 'Library'}
-                </button>
-              ))}
-            </div>
-          </div>
-          {/* teal→pink accent line under header */}
-          <div className="absolute bottom-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #00C2A8 0%, #E8197D 100%)' }} />
         </div>
 
         {copilotTab === 'chat' ? (
           <>
-            <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar">
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
               {messages.length === 0 ? (
-                /* ── Full-page empty state — wordmark as hero ── */
-                <div className="flex flex-col items-center justify-center h-full gap-10 text-center px-8">
-                  <div className="space-y-5">
-                    <div style={{ fontSize: '9px', fontWeight: 800, letterSpacing: '0.3em', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase' }}>
-                      Data Intelligence · WWC 2023
-                    </div>
-                    <div className="relative inline-block">
-                      <div style={{ fontSize: '64px', fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: '-0.03em', lineHeight: 1 }}>
-                        CO-PILOT.
-                      </div>
-                      <div className="absolute -bottom-3 left-0 right-0 h-[3px] rounded-full" style={{ background: 'linear-gradient(90deg, #00C2A8, #E8197D)' }} />
-                    </div>
-                    <p className="text-zinc-400 text-sm leading-relaxed max-w-sm pt-3">
-                      Ask me to visualize data, navigate to a section, or analyze a tactical idea.
+                /* ── Empty state — generous spacing, single set of prompts ── */
+                <div className="flex flex-col items-center justify-center h-full gap-10 text-center px-8 py-16">
+                  <div className="space-y-4">
+                    <p className="text-zinc-400 text-sm leading-relaxed max-w-sm">
+                      Ask me to visualize data, navigate to a section,<br />or analyze a tactical idea.
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-2 justify-center max-w-md">
+                  <div className="flex flex-wrap gap-2.5 justify-center max-w-md">
                     {QUICK_PROMPTS.map(q => (
                       <button key={q.prompt} onClick={() => sendMessage(q.prompt)}
-                        className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all hover:scale-105"
-                        style={{ background: 'rgba(0,194,168,0.08)', border: '1px solid rgba(0,194,168,0.22)', color: '#00C2A8' }}>
+                        className="px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide transition-all hover:scale-105"
+                        style={{ background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.28)', color: '#FBBF24' }}>
                         {q.label}
                       </button>
                     ))}
@@ -388,11 +387,9 @@ export default function PeladaAgent({ onNavigate, currentView, isOpen, onOpenCha
               )}
             </div>
 
-            {/* ── Input footer ── */}
-            <div className="relative z-10 px-8 pb-8 pt-5 bg-black/20 shrink-0">
-              {/* faint teal→pink fade line at the top */}
-              <div className="absolute top-0 left-1/4 right-1/4 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, #00C2A8 30%, #E8197D 70%, transparent)' }} />
-              <div className="max-w-3xl mx-auto space-y-3">
+            {/* ── Input footer — no duplicate quick prompts ── */}
+            <div className="px-8 pb-8 pt-5 bg-black/20 shrink-0">
+              <div className="max-w-3xl mx-auto">
                 <ChatInput
                   value={inputValue}
                   onChange={setInputValue}
@@ -400,17 +397,6 @@ export default function PeladaAgent({ onNavigate, currentView, isOpen, onOpenCha
                   placeholder="Ask about pass maps, tactics, formations, or navigate the platform..."
                   autoFocus
                 />
-                {messages.length === 0 && (
-                  <div className="flex gap-2 flex-wrap">
-                    {QUICK_PROMPTS.map(q => (
-                      <button key={q.prompt} onClick={() => sendMessage(q.prompt)}
-                        className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all"
-                        style={{ background: 'rgba(0,194,168,0.06)', border: '1px solid rgba(0,194,168,0.15)', color: 'rgba(0,194,168,0.8)' }}>
-                        {q.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
           </>
