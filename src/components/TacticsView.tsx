@@ -1,21 +1,17 @@
 import { useState, useEffect } from 'react';
 import { getWWCMatches, getWWCLineup } from '../services/wwcData';
 import type { WWCMatch, WWCLineupPlayer } from '../services/wwcData';
-import { 
-  Play, 
-  Save, 
-  RotateCcw, 
-  Zap, 
-  Mic, 
-  Keyboard, 
-  MousePointer2, 
+import TacticalWorldModel from './TacticalWorldModel';
+import {
+  Zap,
+  Mic,
+  Keyboard,
+  MousePointer2,
   Target,
-  Share2,
   Trophy,
   History,
   Globe,
   Lock,
-  Activity,
   ChevronDown,
   Shield,
   Calendar,
@@ -26,10 +22,11 @@ import {
   Filter,
   Star,
   Download,
-  Layout
+  BrainCircuit,
 } from 'lucide-react';
 
 export default function TacticsView() {
+  const [section, setSection] = useState<'studio' | 'worldSim'>('studio');
   const [view, setView] = useState<'discovery' | 'editor'>('discovery');
   const [mode, setMode] = useState<'design' | 'play' | 'describe'>('design');
   const [matchMode, setMatchMode] = useState<'upcoming' | 'custom'>('upcoming');
@@ -227,9 +224,56 @@ export default function TacticsView() {
     }
   ];
 
+  const sectionTabs = (
+    <div className="flex items-center gap-1 bg-black/40 p-1 rounded-2xl border border-white/5 shadow-inner w-fit">
+      <button
+        onClick={() => setSection('studio')}
+        className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-medium transition-all ${
+          section === 'studio'
+            ? 'bg-white/10 text-white shadow-lg border border-white/5'
+            : 'text-zinc-500 hover:text-white hover:bg-white/5'
+        }`}
+      >
+        <Target className="w-4 h-4" />
+        Studio
+      </button>
+      <button
+        onClick={() => setSection('worldSim')}
+        className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-medium transition-all ${
+          section === 'worldSim'
+            ? 'bg-pink-600 text-white shadow-[0_0_15px_rgba(244,114,182,0.5)] border border-pink-500/50'
+            : 'text-zinc-500 hover:text-white hover:bg-white/5'
+        }`}
+      >
+        <BrainCircuit className="w-4 h-4" />
+        World Sim
+      </button>
+    </div>
+  );
+
+  if (section === 'worldSim') {
+    return (
+      <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+        {sectionTabs}
+        <TacticalWorldModel />
+      </div>
+    );
+  }
+
   if (view === 'discovery') {
       return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              {/* Section tab bar */}
+              <div className="flex items-center justify-between">
+                  {sectionTabs}
+                  <button
+                      onClick={() => setView('editor')}
+                      className="px-6 py-3 bg-white text-black text-sm font-bold uppercase tracking-wider rounded-xl hover:bg-zinc-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:scale-105 flex items-center gap-2"
+                  >
+                      <Plus className="w-4 h-4" />
+                      Create New Tactic
+                  </button>
+              </div>
               {/* Header */}
               <div className="flex justify-between items-end">
                   <div>
@@ -239,13 +283,6 @@ export default function TacticsView() {
                       </h1>
                       <p className="text-zinc-400 mt-2">Design, simulate, and share next-gen tactical systems.</p>
                   </div>
-                  <button 
-                      onClick={() => setView('editor')}
-                      className="px-6 py-3 bg-white text-black text-sm font-bold uppercase tracking-wider rounded-xl hover:bg-zinc-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:scale-105 flex items-center gap-2"
-                  >
-                      <Plus className="w-4 h-4" />
-                      Create New Tactic
-                  </button>
               </div>
 
               {/* Search & Filter Bar */}
@@ -367,16 +404,18 @@ export default function TacticsView() {
 
   // --- Editor View ---
   return (
-    <div className="h-[calc(100vh-140px)] flex gap-8 animate-in fade-in zoom-in-95 duration-300">
-      {/* Back Button (Only visual enhancement for Editor Mode) */}
-      <div className="absolute top-[-60px] left-0">
-          <button 
-              onClick={() => setView('discovery')}
-              className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider"
-          >
-              <ArrowLeft className="w-4 h-4" /> Back to Studio
-          </button>
+    <div className="flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-300">
+      {/* Top bar: section tabs + back */}
+      <div className="flex items-center gap-4">
+        {sectionTabs}
+        <button
+          onClick={() => setView('discovery')}
+          className="flex items-center gap-1.5 text-zinc-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider ml-2"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" /> Back to Studio
+        </button>
       </div>
+    <div className="h-[calc(100vh-200px)] flex gap-8">
 
       {/* Main Pitch Area */}
       <div className="flex-1 flex flex-col min-h-0 bg-black/40 backdrop-blur-2xl rounded-3xl border border-white/5 overflow-hidden relative shadow-2xl group">
@@ -747,6 +786,7 @@ export default function TacticsView() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

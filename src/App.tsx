@@ -1,21 +1,18 @@
 import { useState, useEffect } from 'react';
 import {
   Home, Target, Box, Settings, Bell, Menu,
-  Cpu, Globe, Database, Activity, Calendar, MessageSquare,
-  Users2, FlaskConical, GitBranch,
+  Cpu, Globe, Database, Calendar, MessageSquare,
+  Users2, GitBranch,
 } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import TacticsView from './components/TacticsView';
 import ModelPlayground from './components/ModelPlayground';
 import WidgetBuilder from './components/WidgetBuilder';
-import FormationAnalysis from './components/FormationAnalysis';
 import HistoricalAnalysis from './components/HistoricalAnalysis';
 import CalendarView from './components/CalendarView';
-import BenchmarkBuilder from './components/BenchmarkBuilder';
 import PeladaAgent from './components/PeladaAgent';
 import LineupView from './components/LineupView';
 import ContextPanel from './components/ContextPanel';
-import MCMCSimulation from './components/MCMCSimulation';
 import CommunityLibrary from './components/CommunityLibrary';
 import PlayerSimilarity from './components/visualizations/PlayerSimilarity';
 import { DataContextProvider } from './context/DataContext';
@@ -23,9 +20,8 @@ import { AppContextProvider, useAppContext } from './context/AppContext';
 
 type ViewType =
   | 'dashboard' | 'copilot' | 'tactics' | 'models' | 'widgets'
-  | 'benchmarks' | 'formation' | 'history' | 'calendar'
-  | 'lineup' | 'community' | 'similarity'
-  | 'simulation';
+  | 'history' | 'calendar'
+  | 'lineup' | 'community' | 'similarity';
 
 // Per-category accent colours — full static strings so Tailwind JIT includes them
 const CATEGORY_ACCENT = {
@@ -52,11 +48,8 @@ function AppShell() {
 
     { id: 'calendar' as ViewType,   name: 'Match Calendar',    icon: Calendar,    category: 'Explore',  analystOnly: false },
     { id: 'widgets' as ViewType,    name: 'Widget Builder',    icon: Box,         category: 'Create',   analystOnly: false },
-    { id: 'tactics' as ViewType,    name: 'Tactics Studio',    icon: Target,      category: 'Analyst',  analystOnly: true  },
+    { id: 'tactics' as ViewType,    name: 'Tactics Lab',       icon: Target,      category: 'Analyst',  analystOnly: true  },
     { id: 'models' as ViewType,     name: 'Model Sandbox',     icon: Cpu,         category: 'Analyst',  analystOnly: true  },
-    { id: 'benchmarks' as ViewType, name: 'Benchmarks',        icon: Activity,    category: 'Analyst',  analystOnly: true  },
-    { id: 'formation' as ViewType,  name: 'Formation Analysis',icon: FlaskConical,category: 'Analyst',  analystOnly: true  },
-    { id: 'simulation' as ViewType, name: 'Match Simulation',  icon: Activity,    category: 'Analyst',  analystOnly: true  },
     { id: 'history' as ViewType,    name: 'Historical Data',   icon: Database,    category: 'Analyst',  analystOnly: true  },
   ];
 
@@ -68,17 +61,14 @@ function AppShell() {
       case 'dashboard':   return <Dashboard onOpenAgent={() => setCurrentView('copilot')} onNavigate={v => setCurrentView(v as ViewType)} />;
       case 'copilot':     return <PeladaAgent onNavigate={setCurrentView} currentView={currentView} isOpen={true} onOpenChange={() => {}} fullPage />;
       case 'lineup':      return <LineupView />;
-      case 'similarity':   return <PlayerSimilarity />;
+      case 'similarity':  return <PlayerSimilarity />;
       case 'community':   return <CommunityLibrary />;
       case 'tactics':     return <TacticsView />;
       case 'models':      return <ModelPlayground />;
       case 'widgets':     return <WidgetBuilder />;
-      case 'benchmarks':  return <BenchmarkBuilder />;
       case 'calendar':    return <CalendarView />;
-      case 'formation':   return <FormationAnalysis />;
-      case 'simulation':  return <MCMCSimulation />;
       case 'history':     return <HistoricalAnalysis />;
-      default:            return <Dashboard onOpenAgent={() => setCurrentView('copilot')} />;
+      default:            return <Dashboard onOpenAgent={() => setCurrentView('copilot')} onNavigate={v => setCurrentView(v as ViewType)} />;
     }
   };
 
